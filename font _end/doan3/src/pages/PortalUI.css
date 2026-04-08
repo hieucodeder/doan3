@@ -992,13 +992,14 @@ th {
 
 .cart-item {
     display: grid;
-    grid-template-columns: 90px 1fr auto auto;
+    grid-template-columns: 90px 1fr auto;
     gap: 12px;
     align-items: center;
     border: 1px solid #ecd8cc;
     border-radius: 12px;
     background: #fff;
     padding: 10px;
+    position: relative;
 }
 
 .cart-item img {
@@ -1019,12 +1020,65 @@ th {
     color: #866452;
 }
 
+.cart-remove-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: 1px solid #e57373;
+    color: #e57373;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s, color 0.2s;
+}
+
+.cart-remove-btn:hover {
+    background: #e57373;
+    color: #fff;
+}
+
 .cart-qty {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     border: 1px solid #dcc0af;
     border-radius: 999px;
-    padding: 6px 10px;
+    padding: 4px 8px;
     font-size: 13px;
     color: #7a4c35;
+}
+
+.cart-qty button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #7a4c35;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.15s;
+}
+
+.cart-qty button:hover {
+    background: #f0e0d6;
+}
+
+.cart-qty span {
+    min-width: 20px;
+    text-align: center;
+    font-weight: 600;
 }
 
 .cart-summary-card {
@@ -1079,6 +1133,8 @@ th {
     border-radius: 10px;
     background: #fff;
     padding: 0 10px;
+    color: #3b1f10;
+    font-size: 14px;
 }
 
 .full-row {
@@ -1102,6 +1158,17 @@ th {
 .checkout-summary p,
 .checkout-summary strong {
     margin: 0;
+}
+
+.checkout-msg {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: #e8f5e9;
+    color: #2e7d32;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid #a5d6a7;
 }
 
 .order-list {

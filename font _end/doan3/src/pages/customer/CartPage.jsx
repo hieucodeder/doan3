@@ -1,6 +1,6 @@
 import { formatPrice } from '../../data/mockData'
 
-export default function CartPage({ cartItems = [], productsData = [], onGoCheckout }) {
+export default function CartPage({ cartItems = [], productsData = [], onGoCheckout, onRemoveFromCart, onUpdateCartQty }) {
     const rows = cartItems.map((item) => {
         const product = productsData.find((p) => p.id === item.product_id)
         const total = (product?.price || 0) * item.quantity
@@ -36,8 +36,19 @@ export default function CartPage({ cartItems = [], productsData = [], onGoChecko
                                     <p>{row.brand}</p>
                                     <small>Gia: {row.price}</small>
                                 </div>
-                                <div className="cart-qty">SL: {row.quantity}</div>
+                                <div className="cart-qty">
+                                    <button type="button" onClick={() => onUpdateCartQty && onUpdateCartQty(row.product_id, row.quantity - 1)}>-</button>
+                                    <span>{row.quantity}</span>
+                                    <button type="button" onClick={() => onUpdateCartQty && onUpdateCartQty(row.product_id, row.quantity + 1)}>+</button>
+                                </div>
                                 <strong>{row.total}</strong>
+                                <button
+                                    type="button"
+                                    className="cart-remove-btn"
+                                    onClick={() => onRemoveFromCart && onRemoveFromCart(row.product_id)}
+                                >
+                                    ✕
+                                </button>
                             </article>
                         ))
                     )}

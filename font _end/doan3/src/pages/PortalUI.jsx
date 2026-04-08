@@ -45,6 +45,10 @@ function CustomerPages({
     onAddToCart,
     onBuyNow,
     onGoCheckout,
+    onRemoveFromCart,
+    onUpdateCartQty,
+    userId,
+    onCheckoutSuccess,
 }) {
     if (activeTab === 'home') {
         return (
@@ -69,9 +73,9 @@ function CustomerPages({
         )
     }
     if (activeTab === 'cart') {
-        return <CartPage cartItems={cartItems} productsData={productsData} onGoCheckout={onGoCheckout} />
+        return <CartPage cartItems={cartItems} productsData={productsData} onGoCheckout={onGoCheckout} onRemoveFromCart={onRemoveFromCart} onUpdateCartQty={onUpdateCartQty} />
     }
-    if (activeTab === 'checkout') return <CheckoutPage cartItems={cartItems} productsData={productsData} />
+    if (activeTab === 'checkout') return <CheckoutPage cartItems={cartItems} productsData={productsData} userId={userId} onCheckoutSuccess={onCheckoutSuccess} />
     return <MyOrdersPage />
 }
 
@@ -83,7 +87,7 @@ function AdminPages({ activeTab }) {
     return <ReviewsPage />
 }
 
-export default function PortalUI({ role = 'user', userName = 'Khach hang', onLogout }) {
+export default function PortalUI({ role = 'user', userName = 'Khach hang', onLogout, userId }) {
     const [customerTab, setCustomerTab] = useState('home')
     const [adminTab, setAdminTab] = useState('users')
     const [selectedProductId, setSelectedProductId] = useState(1)
@@ -150,27 +154,55 @@ export default function PortalUI({ role = 'user', userName = 'Khach hang', onLog
         setCustomerTab('detail')
     }
 
-    const handleAddToCart = (productId, quantity = 1) => {
-        const product = productsData.find((item) => item.id === productId)
-        if (!product) return
-
-        setCartItems((prev) => {
-            const existing = prev.find((item) => item.product_id === productId)
-            if (existing) {
-                return prev.map((item) =>
-                    item.product_id === productId
-                        ? { ...item, quantity: item.quantity + quantity }
-                        : item,
-                )
-            }
-
-            return [...prev, { id: Date.now(), product_id: productId, quantity }]
-        })
+    const fetchCartItems = async () => {
+        if (!userId) return
+        const { ok, payload } = await apiRequest(`/api/cart-items/${userId}`)
+        if (ok && payload?.success && Array.isArray(payload.data)) {
+            setCartItems(payload.data)
+        }
     }
 
-    const handleBuyNow = (productId, quantity = 1) => {
-        handleAddToCart(productId, quantity)
+    useEffect(() => {
+        if (userId && mode === 'customer') {
+            fetchCartItems()
+        }
+    }, [userId, mode])
+
+    const handleAddToCart = async (productId, quantity = 1) => {
+        if (!userId) return
+        const { ok } = await apiRequest('/api/cart-items', {
+            method: 'POST',
+            body: JSON.stringify({ user_id: userId, product_id: productId, quantity }),
+        })
+        if (ok) {
+            await fetchCartItems()
+        }
+    }
+
+    const handleBuyNow = async (productId, quantity = 1) => {
+        await handleAddToCart(productId, quantity)
         setCustomerTab('cart')
+    }
+
+    const handleRemoveFromCart = async (productId) => {
+        const { ok } = await apiRequest('/api/cart-items', {
+            method: 'DELETE',
+            body: JSON.stringify({ user_id: userId, product_id: productId }),
+        })
+        if (ok) {
+            await fetchCartItems()
+        }
+    }
+
+    const handleUpdateCartQty = async (productId, quantity) => {
+        if (!userId || quantity < 1) return
+        const { ok } = await apiRequest('/api/cart-items', {
+            method: 'PUT',
+            body: JSON.stringify({ user_id: userId, product_id: productId, quantity }),
+        })
+        if (ok) {
+            await fetchCartItems()
+        }
     }
 
     const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
@@ -187,12 +219,15 @@ export default function PortalUI({ role = 'user', userName = 'Khach hang', onLog
                 selectedCatalog={selectedCatalog}
                 menuCategories={categoryMenu}
                 onLogout={onLogout}
-                onChangeTab={(nextTab, catalogKey, catalogLabel) => {
+                onChangeTab={async (nextTab, catalogKey, catalogLabel) => {
                     if (mode === 'customer') {
                         setCustomerTab(nextTab)
                         if (catalogKey) {
                             setSelectedCatalog(catalogKey)
                             setSelectedCatalogLabel(catalogLabel || 'Nuoc hoa')
+                        }
+                        if (nextTab === 'cart') {
+                            await fetchCartItems()
                         }
                     } else {
                         setAdminTab(nextTab)
@@ -214,6 +249,13 @@ export default function PortalUI({ role = 'user', userName = 'Khach hang', onLog
                         onAddToCart={handleAddToCart}
                         onBuyNow={handleBuyNow}
                         onGoCheckout={() => setCustomerTab('checkout')}
+                        onRemoveFromCart={handleRemoveFromCart}
+                        onUpdateCartQty={handleUpdateCartQty}
+                        userId={userId}
+                        onCheckoutSuccess={() => {
+                            setCartItems([])
+                            setCustomerTab('home')
+                        }}
                     />
                 ) : (
                     <AdminPages activeTab={adminTab} />
