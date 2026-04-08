@@ -24,4 +24,14 @@ const updateOrderStatus = async (id, status) => {
     return rows[0];
 };
 
-module.exports = { createOrder, getOrders, updateOrderStatus };
+// Đặt hàng: tự tính tổng tiền, tạo order, thêm order_items và xóa giỏ hàng
+const checkoutOrder = async (user_id, address, phone) => {
+    const [rows] = await db.query(
+        "CALL sp_checkout_order(?, ?, ?)",
+        [user_id, address, phone]
+    );
+    // SP trả về { message: 'ORDER_SUCCESS', order_id } hoặc { message: 'CART_EMPTY' }
+    return rows[0][0] || null;
+};
+
+module.exports = { createOrder, getOrders, updateOrderStatus, checkoutOrder };

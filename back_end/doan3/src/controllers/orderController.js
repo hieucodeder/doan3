@@ -43,4 +43,29 @@ const updateOrderStatus = async (req, res) => {
     }
 };
 
-module.exports = { createOrder, getOrders, updateOrderStatus };
+// POST /api/orders/checkout - Đặt hàng từ giỏ hàng
+const checkoutOrder = async (req, res) => {
+    const { user_id, address, phone } = req.body;
+
+    if (!user_id || !address || !phone) {
+        return res.status(400).json({ success: false, message: "user_id, address, phone là bắt buộc" });
+    }
+
+    try {
+        const result = await orderService.checkoutOrder(user_id, address, phone);
+
+        if (!result || result.message === "CART_EMPTY") {
+            return res.status(400).json({ success: false, message: "Giỏ hàng trống" });
+        }
+
+        res.status(201).json({
+            success: true,
+            message: "Đặt hàng thành công",
+            data: { order_id: result.order_id }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+module.exports = { createOrder, getOrders, updateOrderStatus, checkoutOrder };
