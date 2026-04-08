@@ -1,0 +1,394 @@
+/* ========================================
+   Auth Pages – Luxury Perfume Store
+   ======================================== */
+
+/* Background full trang */
+.auth-container {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(180, 130, 70, 0.18) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(120, 60, 100, 0.18) 0%, transparent 60%),
+        linear-gradient(135deg, #0d0d0d 0%, #1a1008 40%, #0d0608 100%);
+    overflow: hidden;
+}
+
+/* Hiệu ứng bong bóng nền */
+.auth-container::before,
+.auth-container::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    animation: float 8s ease-in-out infinite;
+}
+
+.auth-container::before {
+    width: 400px;
+    height: 400px;
+    top: -80px;
+    left: -100px;
+    background: radial-gradient(circle, rgba(180, 130, 60, 0.25), transparent 70%);
+}
+
+.auth-container::after {
+    width: 350px;
+    height: 350px;
+    bottom: -80px;
+    right: -80px;
+    background: radial-gradient(circle, rgba(140, 60, 100, 0.25), transparent 70%);
+    animation-delay: -4s;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+/* Card */
+.auth-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 440px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(200, 160, 80, 0.25);
+    border-radius: 24px;
+    padding: 40px 36px;
+    backdrop-filter: blur(20px);
+    box-shadow:
+        0 8px 60px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(200, 160, 80, 0.15);
+    animation: slideUp 0.5s ease-out;
+}
+
+.auth-card--register {
+    max-width: 480px;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Brand */
+.auth-brand {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.brand-icon {
+    font-size: 28px;
+    color: #c9a84c;
+    display: block;
+    margin-bottom: 6px;
+    letter-spacing: 8px;
+    animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.brand-name {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 6px;
+    color: #e8c97e;
+    margin: 0 0 4px;
+    font-family: 'Georgia', serif;
+    text-shadow: 0 0 30px rgba(200, 160, 60, 0.5);
+}
+
+.brand-tagline {
+    font-size: 12px;
+    color: rgba(200, 160, 80, 0.7);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+/* Tiêu đề form */
+.auth-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 600;
+    color: #f0e0c0;
+    margin: 0 0 6px;
+    font-family: 'Georgia', serif;
+}
+
+.auth-subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: rgba(200, 180, 150, 0.6);
+    margin: 0 0 28px;
+}
+
+.demo-box {
+    margin: 0 0 16px;
+    border: 1px dashed rgba(200, 160, 80, 0.4);
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+    padding: 10px 12px;
+}
+
+.demo-title {
+    margin: 0 0 6px;
+    color: rgba(232, 201, 126, 0.95);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.demo-account {
+    margin: 4px 0;
+    color: rgba(230, 215, 190, 0.85);
+    font-size: 12px;
+    font-family: Consolas, 'Courier New', monospace;
+}
+
+/* Form */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(220, 190, 130, 0.85);
+    letter-spacing: 0.5px;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 14px;
+    font-size: 15px;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.7;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 44px 12px 42px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(200, 160, 80, 0.2);
+    border-radius: 12px;
+    color: #f0e0c0;
+    font-size: 14px;
+    transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.form-input::placeholder {
+    color: rgba(180, 150, 100, 0.4);
+}
+
+.form-input:focus {
+    border-color: rgba(200, 160, 80, 0.7);
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 3px rgba(200, 160, 80, 0.12);
+}
+
+.form-input.input-error {
+    border-color: rgba(220, 80, 80, 0.6);
+    box-shadow: 0 0 0 3px rgba(220, 80, 80, 0.1);
+}
+
+.error-msg {
+    font-size: 12px;
+    color: #e08080;
+    margin: 0;
+    padding-left: 4px;
+}
+
+.auth-form-error {
+    padding-left: 0;
+    margin-top: -4px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    padding: 4px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.toggle-password:hover {
+    opacity: 1;
+}
+
+/* Options */
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.form-agree {
+    margin-top: -4px;
+}
+
+.remember-me {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: rgba(200, 180, 150, 0.7);
+}
+
+.remember-me input[type="checkbox"] {
+    margin-top: 2px;
+    accent-color: #c9a84c;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.forgot-link {
+    font-size: 13px;
+    color: #c9a84c;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.forgot-link:hover {
+    color: #e8c97e;
+    text-decoration: underline;
+}
+
+/* Button */
+.auth-btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 4px;
+    background: linear-gradient(135deg, #b8872a 0%, #e8c97e 50%, #b8872a 100%);
+    background-size: 200% 100%;
+    border: none;
+    border-radius: 12px;
+    color: #1a1008;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-position 0.4s, transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(180, 130, 40, 0.4);
+}
+
+.auth-btn:hover {
+    background-position: right center;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 28px rgba(180, 130, 40, 0.6);
+}
+
+.auth-btn:active {
+    transform: translateY(0);
+}
+
+/* Divider */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0 16px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(200, 160, 80, 0.2);
+}
+
+.auth-divider span {
+    font-size: 12px;
+    color: rgba(200, 160, 80, 0.5);
+    letter-spacing: 1px;
+}
+
+/* Switch */
+.auth-switch {
+    text-align: center;
+    font-size: 14px;
+    color: rgba(200, 180, 150, 0.6);
+    margin: 0;
+}
+
+.switch-btn {
+    background: none;
+    border: none;
+    color: #c9a84c;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.switch-btn:hover {
+    color: #e8c97e;
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 32px 22px;
+    }
+
+    .brand-name {
+        font-size: 22px;
+        letter-spacing: 4px;
+    }
+}
