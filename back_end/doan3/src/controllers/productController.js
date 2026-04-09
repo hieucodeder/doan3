@@ -54,4 +54,16 @@ const getProductById = async (req, res) => {
     }
 };
 
-module.exports = { createProduct, getProducts, updateProduct, getProductById };
+// GET /api/products/search?keyword=Dior&category_id=0
+const searchProducts = async (req, res) => {
+    const { keyword = "", category_id = 0 } = req.query;
+
+    try {
+        const data = await productService.searchProducts(keyword, category_id);
+        res.json({ success: true, data });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+module.exports = { createProduct, getProducts, updateProduct, getProductById, searchProducts };

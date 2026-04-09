@@ -33,4 +33,13 @@ const getProductById = async (id) => {
     return rows[0][0] || null;
 };
 
-module.exports = { createProduct, getProducts, updateProduct, getProductById };
+// Tìm kiếm sản phẩm theo keyword và category_id (0 = tất cả)
+const searchProducts = async (keyword = "", category_id = 0) => {
+    const [rows] = await db.query(
+        "CALL sp_search_products(?, ?)",
+        [keyword, category_id]
+    );
+    return rows[0];
+};
+
+module.exports = { createProduct, getProducts, updateProduct, getProductById, searchProducts };

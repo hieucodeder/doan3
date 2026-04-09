@@ -34,4 +34,13 @@ const checkoutOrder = async (user_id, address, phone) => {
     return rows[0][0] || null;
 };
 
-module.exports = { createOrder, getOrders, updateOrderStatus, checkoutOrder };
+// Lấy lịch sử đặt hàng của user
+const getOrderHistoryByUser = async (user_id) => {
+    const [rows] = await db.query(
+        "CALL sp_get_order_history_by_user(?)",
+        [user_id]
+    );
+    return rows[0];
+};
+
+module.exports = { createOrder, getOrders, updateOrderStatus, checkoutOrder, getOrderHistoryByUser };

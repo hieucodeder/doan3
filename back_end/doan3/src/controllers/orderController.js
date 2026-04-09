@@ -68,4 +68,16 @@ const checkoutOrder = async (req, res) => {
     }
 };
 
-module.exports = { createOrder, getOrders, updateOrderStatus, checkoutOrder };
+// GET /api/orders/history/:userId - Lịch sử đặt hàng của user
+const getOrderHistoryByUser = async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const data = await orderService.getOrderHistoryByUser(userId);
+        res.json({ success: true, data });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+module.exports = { createOrder, getOrders, updateOrderStatus, checkoutOrder, getOrderHistoryByUser };
