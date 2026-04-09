@@ -8,7 +8,6 @@ import ProductDetailPage from './customer/ProductDetailPage'
 import CartPage from './customer/CartPage'
 import CheckoutPage from './customer/CheckoutPage'
 import MyOrdersPage from './customer/MyOrdersPage'
-import { categories as fallbackCategories, products as fallbackProducts } from '../data/mockData'
 import { apiRequest, resolveImageUrl } from '../services/apiClient'
 
 import UsersPage from './admin/UsersPage'
@@ -67,6 +66,7 @@ function CustomerPages({
                 productId={selectedProductId}
                 categoriesData={categoriesData}
                 productsData={productsData}
+                userId={userId}
                 onAddToCart={onAddToCart}
                 onBuyNow={onBuyNow}
             />
@@ -76,7 +76,7 @@ function CustomerPages({
         return <CartPage cartItems={cartItems} productsData={productsData} onGoCheckout={onGoCheckout} onRemoveFromCart={onRemoveFromCart} onUpdateCartQty={onUpdateCartQty} />
     }
     if (activeTab === 'checkout') return <CheckoutPage cartItems={cartItems} productsData={productsData} userId={userId} onCheckoutSuccess={onCheckoutSuccess} />
-    return <MyOrdersPage />
+    return <MyOrdersPage userId={userId} />
 }
 
 function AdminPages({ activeTab }) {
@@ -94,8 +94,8 @@ export default function PortalUI({ role = 'user', userName = 'Khach hang', onLog
     const [cartItems, setCartItems] = useState([])
     const [selectedCatalog, setSelectedCatalog] = useState('all')
     const [selectedCatalogLabel, setSelectedCatalogLabel] = useState('Nuoc hoa')
-    const [categoryMenu, setCategoryMenu] = useState(fallbackCategories)
-    const [productsData, setProductsData] = useState(fallbackProducts)
+    const [categoryMenu, setCategoryMenu] = useState([])
+    const [productsData, setProductsData] = useState([])
 
     const mode = role === 'admin' ? 'admin' : 'customer'
     const tabs = useMemo(() => (mode === 'customer' ? customerTabs : adminTabs), [mode])
@@ -205,6 +205,25 @@ export default function PortalUI({ role = 'user', userName = 'Khach hang', onLog
         }
     }
 
+    const handleSearch = async (keyword) => {
+        const categoryId = selectedCatalog.startsWith('category-')
+            ? Number(selectedCatalog.replace('category-', ''))
+            : 0
+        const params = new URLSearchParams()
+        if (keyword) params.set('keyword', keyword)
+        params.set('category_id', categoryId)
+        const { ok, payload } = await apiRequest(`/api/products/search?${params.toString()}`)
+        if (ok && payload?.success && Array.isArray(payload.data)) {
+            const normalized = payload.data.map((product) => ({
+                ...product,
+                image_url: resolveImageUrl(product.image_url || product.image || ''),
+                price: Number(product.price || 0),
+                category_id: Number(product.category_id || 0),
+            }))
+            setProductsData(normalized)
+        }
+    }
+
     const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
 
     return (
@@ -219,6 +238,7 @@ export default function PortalUI({ role = 'user', userName = 'Khach hang', onLog
                 selectedCatalog={selectedCatalog}
                 menuCategories={categoryMenu}
                 onLogout={onLogout}
+                onSearch={handleSearch}
                 onChangeTab={async (nextTab, catalogKey, catalogLabel) => {
                     if (mode === 'customer') {
                         setCustomerTab(nextTab)

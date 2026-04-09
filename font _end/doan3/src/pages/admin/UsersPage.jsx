@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import TableView from '../../components/TableView'
-import { users } from '../../data/mockData'
 
 export default function UsersPage() {
-    const [rows, setRows] = useState(users)
+    const [rows, setRows] = useState([])
     const [form, setForm] = useState({ name: '', email: '', role: 'user' })
 
     const handleAddUser = () => {

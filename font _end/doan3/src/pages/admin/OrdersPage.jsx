@@ -1,11 +1,7 @@
 import TableView from '../../components/TableView'
-import { orders } from '../../data/mockData'
 
 export default function OrdersPage() {
-    const rows = orders.map((order) => ({
-        ...order,
-        total_price: order.total_price.toLocaleString('vi-VN'),
-    }))
+    const rows = []
 
     return (
         <TableView

@@ -3,7 +3,7 @@ import { formatPrice } from '../../data/mockData'
 export default function HomePage({
     onOpenProduct,
     selectedCatalog = 'all',
-    selectedCatalogLabel = 'Nuoc hoa',
+    selectedCatalogLabel = 'Nước hoa',
     categoriesData = [],
     productsData = [],
 }) {
@@ -12,66 +12,43 @@ export default function HomePage({
         : null
 
     const baseProducts = Array.isArray(productsData) ? productsData : []
-    const matchedProducts = selectedCategoryId
+    const sourceList = selectedCategoryId
         ? baseProducts.filter((item) => item.category_id === selectedCategoryId)
         : baseProducts
-    const sourceList = matchedProducts.length > 0 ? matchedProducts : baseProducts
 
     if (sourceList.length === 0) {
         return (
             <div className="shop-catalog-page">
                 <section className="catalog-heading">
-                    <h2>Nuoc Hoa</h2>
-                    <p>Trang chu / Nuoc Hoa / {selectedCatalogLabel}</p>
+                    <h2>Nước hoa</h2>
+                    <p>Trang chủ  / Nước hoa / {selectedCatalogLabel}</p>
                 </section>
                 <section className="panel">
-                    <p>Chua co du lieu san pham tu API.</p>
+                    <p>Hiện chưa có sản phẩm nào trong danh mục này.</p>
                 </section>
             </div>
         )
     }
 
-    const displayProducts = Array.from({ length: Math.max(8, sourceList.length * 2) }, (_, index) => {
-        const source = sourceList[index % sourceList.length]
-        return {
-            ...source,
-            viewId: `${source.id}-${index}`,
-            oldPrice: Math.round(source.price * 1.22),
-        }
-    })
+    const displayProducts = sourceList.map((product) => ({
+        ...product,
+        viewId: `${product.id}`,
+        oldPrice: Math.round(product.price * 1.22),
+    }))
 
     return (
         <div className="shop-catalog-page">
             <section className="catalog-heading">
-                <h2>Nuoc Hoa</h2>
-                <p>Trang chu / Nuoc Hoa / {selectedCatalogLabel}</p>
+                <h2>Nước hoa</h2>
+                <p>Trang chủ / Nước hoa / {selectedCatalogLabel}</p>
             </section>
 
-            <section className="catalog-filter-row panel">
-                <div className="filter-actions">
-                    <button type="button">Nhom huong</button>
-                    <button type="button">Nam / Nu</button>
-                    <button type="button">Duoi 2 trieu</button>
-                    <button type="button">2 - 4 trieu</button>
-                    <button type="button">Tren 4 trieu</button>
-                </div>
-            </section>
-
-            <section className="catalog-chip-row">
-                <div className="chips shop-chips">
-                    {categoriesData.map((category) => (
-                        <span className="chip" key={category.id}>
-                            {category.name}
-                        </span>
-                    ))}
-                </div>
-            </section>
 
             <section className="catalog-product-grid">
                 <div className="card-list catalog-cards">
                     {displayProducts.map((product) => (
                         <article key={product.viewId} className="product-card catalog-card">
-                            <div className="gift-tag">QUA TANG</div>
+                            <div className="gift-tag">Sale</div>
                             <img src={product.image_url} alt={product.name} className="product-photo" />
                             <div className="product-content">
                                 <p className="product-brand">{product.brand}</p>
@@ -87,7 +64,7 @@ export default function HomePage({
                                     Mua ngay
                                 </button>
                                 <button type="button" className="ghost-btn" onClick={() => onOpenProduct(product.id)}>
-                                    Chi tiet
+                                    Chi tiết
                                 </button>
                             </div>
                         </article>

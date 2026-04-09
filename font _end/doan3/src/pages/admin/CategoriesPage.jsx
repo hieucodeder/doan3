@@ -1,5 +1,4 @@
 import TableView from '../../components/TableView'
-import { categories } from '../../data/mockData'
 
 export default function CategoriesPage() {
     return (
@@ -7,7 +6,7 @@ export default function CategoriesPage() {
             title="Categories"
             description="Quan ly danh muc tu bang categories"
             columns={['id', 'name', 'description']}
-            rows={categories}
+            rows={[]}
         />
     )
 }

@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import './Auth.css'
 
-export default function Login({ onSwitchToRegister, onLogin, demoAccounts = [] }) {
+export default function Login({ onSwitchToRegister, onLogin }) {
     const [form, setForm] = useState({ email: '', password: '' })
     const [showPassword, setShowPassword] = useState(false)
     const [error, setError] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
+    const [successMsg, setSuccessMsg] = useState('')
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value })
@@ -19,9 +20,11 @@ export default function Login({ onSwitchToRegister, onLogin, demoAccounts = [] }
 
         if (!result.success) {
             setError(result.message || 'Dang nhap that bai')
+            setSuccessMsg('')
             return
         }
         setError('')
+        setSuccessMsg('Đăng nhập thành công! Đang chuyển trang...')
     }
 
     return (
@@ -38,17 +41,6 @@ export default function Login({ onSwitchToRegister, onLogin, demoAccounts = [] }
 
                 <h2 className="auth-title">Đăng Nhập</h2>
                 <p className="auth-subtitle">Chào mừng bạn trở lại</p>
-
-                {demoAccounts.length > 0 ? (
-                    <div className="demo-box">
-                        <p className="demo-title">Tai khoan demo:</p>
-                        {demoAccounts.map((account) => (
-                            <p key={account.email} className="demo-account">
-                                {account.role}: {account.email} / {account.password}
-                            </p>
-                        ))}
-                    </div>
-                ) : null}
 
                 <form onSubmit={handleSubmit} className="auth-form">
                     <div className="form-group">
@@ -99,8 +91,9 @@ export default function Login({ onSwitchToRegister, onLogin, demoAccounts = [] }
                     </div>
 
                     <button type="submit" className="auth-btn">
-                        <span>{isSubmitting ? 'Dang xu ly...' : 'Đăng Nhập'}</span>
+                        <span>{isSubmitting ? 'Đang xử lý...' : 'Đăng Nhập'}</span>
                     </button>
+                    {successMsg ? <p className="success-msg auth-form-success">{successMsg}</p> : null}
                     {error ? <p className="error-msg auth-form-error">{error}</p> : null}
                 </form>
 

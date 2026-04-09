@@ -17,7 +17,7 @@ export default function CheckoutPage({ cartItems = [], productsData = [], userId
 
     const handleCheckout = async () => {
         if (!phone || !address) {
-            setMessage('Vui long nhap dia chi va so dien thoai.')
+            setMessage('Vui lòng nhập địa chỉ và số điện thoại.')
             return
         }
         setIsLoading(true)
@@ -28,12 +28,12 @@ export default function CheckoutPage({ cartItems = [], productsData = [], userId
         })
         setIsLoading(false)
         if (ok && payload?.success) {
-            setMessage(`Dat hang thanh cong! Ma don hang: #${payload.data?.order_id}`)
+            setMessage(`Đặt hàng thành công! Mã đơn hàng: #${payload.data?.order_id}`)
             setTimeout(() => {
                 if (onCheckoutSuccess) onCheckoutSuccess()
             }, 2500)
         } else {
-            setMessage(payload?.message || 'Dat hang that bai. Vui long thu lai.')
+            setMessage(payload?.message || 'Đặt hàng thất bại. Vui lòng thử lại.')
         }
     }
 
@@ -41,16 +41,16 @@ export default function CheckoutPage({ cartItems = [], productsData = [], userId
         <section className="panel checkout-grid">
             <div>
                 <div className="panel-head">
-                    <h2>Thanh toan don hang</h2>
-                    <p>Vui long dien thong tin giao hang de hoan tat don</p>
+                    <h2>Thanh toán đơn hàng</h2>
+                    <p>Vui lòng điền thông tin giao hàng để hoàn tất đơn</p>
                 </div>
                 <div className="form-grid two-col">
                     <label className="field">
-                        <span>user_id</span>
+                        <span>User ID</span>
                         <input type="text" value={userId || ''} readOnly />
                     </label>
                     <label className="field">
-                        <span>phone</span>
+                        <span>Điện thoại</span>
                         <input
                             type="text"
                             placeholder="0901234567"
@@ -59,16 +59,16 @@ export default function CheckoutPage({ cartItems = [], productsData = [], userId
                         />
                     </label>
                     <label className="field full-row">
-                        <span>address</span>
+                        <span>Địa chỉ</span>
                         <input
                             type="text"
-                            placeholder="Dia chi nhan hang"
+                            placeholder="Địa chỉ nhận hàng"
                             value={address}
                             onChange={(e) => setAddress(e.target.value)}
                         />
                     </label>
                     <label className="field">
-                        <span>total_price</span>
+                        <span>Tổng tiền</span>
                         <input type="text" value={formatPrice(total)} readOnly />
                     </label>
                 </div>
@@ -76,17 +76,17 @@ export default function CheckoutPage({ cartItems = [], productsData = [], userId
             </div>
 
             <aside className="checkout-summary">
-                <h3>Tong quan don hang</h3>
-                <p>{cartItems.length} san pham</p>
-                <p>Phi van chuyen: {formatPrice(shippingFee)}</p>
-                <strong>Tong thanh toan: {formatPrice(total)}</strong>
+                <h3>Tổng quan đơn hàng</h3>
+                <p>{cartItems.length} sản phẩm</p>
+                <p>Phí vận chuyển: {formatPrice(shippingFee)}</p>
+                <strong>Tổng thanh toán: {formatPrice(total)}</strong>
                 <button
                     type="button"
                     className="btn-primary"
                     onClick={handleCheckout}
                     disabled={isLoading}
                 >
-                    {isLoading ? 'Dang xu ly...' : 'Dat hang ngay'}
+                    {isLoading ? 'Đang xử lý...' : 'Đặt hàng ngay'}
                 </button>
             </aside>
         </section>

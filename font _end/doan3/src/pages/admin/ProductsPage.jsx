@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import TableView from '../../components/TableView'
-import { products } from '../../data/mockData'
 
 export default function ProductsPage() {
-    const [rows, setRows] = useState(products)
+    const [rows, setRows] = useState([])
     const [form, setForm] = useState({
         name: '',
         brand: '',
@@ -40,44 +39,44 @@ export default function ProductsPage() {
         <>
             <section className="panel">
                 <div className="panel-head">
-                    <h2>Them san pham</h2>
-                    <p>Admin co quyen them san pham moi</p>
+                    <h2>Thêm sản phẩm</h2>
+                    <p>Admin có quyền thêm sản phẩm mới</p>
                 </div>
                 <div className="form-grid two-col">
                     <label className="field">
-                        <span>name</span>
+                        <span>Tên sản phẩm</span>
                         <input
                             type="text"
                             value={form.name}
                             onChange={(e) => setForm({ ...form, name: e.target.value })}
-                            placeholder="Ten san pham"
+                            placeholder="Tên sản phẩm"
                         />
                     </label>
                     <label className="field">
-                        <span>brand</span>
+                        <span>Thương hiệu</span>
                         <input
                             type="text"
                             value={form.brand}
                             onChange={(e) => setForm({ ...form, brand: e.target.value })}
-                            placeholder="Thuong hieu"
+                            placeholder="Thương hiệu"
                         />
                     </label>
                     <label className="field">
-                        <span>price</span>
+                        <span>Giá</span>
                         <input
                             type="number"
                             value={form.price}
                             onChange={(e) => setForm({ ...form, price: e.target.value })}
-                            placeholder="Gia ban"
+                            placeholder="Giá bán"
                         />
                     </label>
                     <label className="field">
-                        <span>stock</span>
+                        <span>Số lượng</span>
                         <input
                             type="number"
                             value={form.stock}
                             onChange={(e) => setForm({ ...form, stock: e.target.value })}
-                            placeholder="So luong ton"
+                            placeholder="Số lượng tồn"
                         />
                     </label>
                     <label className="field">
@@ -93,13 +92,13 @@ export default function ProductsPage() {
                     </label>
                 </div>
                 <button type="button" className="btn-primary inline-action" onClick={handleAddProduct}>
-                    Them san pham
+                    Thêm sản phẩm
                 </button>
             </section>
 
             <TableView
-                title="Products"
-                description="Quan ly san pham tu bang products"
+                title="Sản phẩm"
+                description="Quản lý sản phẩm từ bảng products"
                 columns={['id', 'name', 'brand', 'price', 'stock', 'description', 'image_url', 'category_id', 'created_at']}
                 rows={mappedRows}
             />

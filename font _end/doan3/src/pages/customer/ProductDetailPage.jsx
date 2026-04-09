@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { formatPrice, reviews } from '../../data/mockData'
+import { formatPrice } from '../../data/mockData'
 import { apiRequest, resolveImageUrl } from '../../services/apiClient'
 
 export default function ProductDetailPage({
     productId,
     productsData = [],
     categoriesData = [],
+    userId,
     onAddToCart,
     onBuyNow,
 }) {
@@ -15,18 +16,20 @@ export default function ProductDetailPage({
     const [error, setError] = useState('')
     const [quantity, setQuantity] = useState(1)
 
+    const [reviews, setReviews] = useState([])
+    const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' })
+    const [reviewMsg, setReviewMsg] = useState('')
+    const [isSubmittingReview, setIsSubmittingReview] = useState(false)
+
     useEffect(() => {
         let isMounted = true
 
         const fetchProductDetail = async () => {
             if (!productId) return
-
             setIsLoading(true)
             setError('')
-
             const { ok, payload } = await apiRequest(`/api/products/${productId}`)
             if (!isMounted) return
-
             if (ok && payload?.success && payload?.data) {
                 const apiProduct = payload.data
                 setProduct({
@@ -41,27 +44,59 @@ export default function ProductDetailPage({
                 setError(payload?.message || 'Khong tai duoc chi tiet san pham')
                 setProduct(fallbackProduct)
             }
-
             setIsLoading(false)
         }
 
         fetchProductDetail()
+        return () => { isMounted = false }
+    }, [productId])
 
-        return () => {
-            isMounted = false
+    const fetchReviews = async (pid) => {
+        if (!pid) return
+        const { ok, payload } = await apiRequest(`/api/reviews/${pid}`)
+        if (ok && payload?.success && Array.isArray(payload.data)) {
+            setReviews(payload.data)
         }
-    }, [productId, fallbackProduct])
+    }
 
     useEffect(() => {
         setQuantity(1)
-    }, [product?.id])
+        setReviews([])
+        setReviewMsg('')
+        setReviewForm({ rating: 5, comment: '' })
+        if (productId) fetchReviews(productId)
+    }, [productId])
+
+    const handleSubmitReview = async (e) => {
+        e.preventDefault()
+        if (!userId) { setReviewMsg('Ban can dang nhap de danh gia.'); return }
+        if (!reviewForm.comment.trim()) { setReviewMsg('Vui long nhap noi dung danh gia.'); return }
+        setIsSubmittingReview(true)
+        setReviewMsg('')
+        const { ok, payload } = await apiRequest('/api/reviews', {
+            method: 'POST',
+            body: JSON.stringify({
+                user_id: userId,
+                product_id: productId,
+                rating: reviewForm.rating,
+                comment: reviewForm.comment.trim(),
+            }),
+        })
+        setIsSubmittingReview(false)
+        if (ok && payload?.success) {
+            setReviewMsg('Cảm ơn bạn đã đánh giá!')
+            setReviewForm({ rating: 5, comment: '' })
+            await fetchReviews(productId)
+        } else {
+            setReviewMsg(payload?.message || 'Gửi đánh giá thất bại.')
+        }
+    }
 
     if (!product) return null
 
-    const productReviews = reviews.filter((review) => review.product_id === product.id)
     const categoryName = categoriesData.find((item) => item.id === product.category_id)?.name || 'Khac'
-    const avgRating = productReviews.length
-        ? (productReviews.reduce((sum, item) => sum + item.rating, 0) / productReviews.length).toFixed(1)
+    const avgRating = reviews.length
+        ? (reviews.reduce((sum, r) => sum + Number(r.rating), 0) / reviews.length).toFixed(1)
         : '0.0'
 
     const increaseQty = () => setQuantity((prev) => Math.min(prev + 1, Math.max(product.stock || 1, 1)))
@@ -88,50 +123,70 @@ export default function ProductDetailPage({
             <div className="detail-layout">
                 <section className="panel product-visual">
                     <img src={product.image_url} alt={product.name} className="product-main-photo" />
-                    <div className="thumb-row">
-                        <img src={product.image_url} alt={product.name} />
-                        <img src={product.image_url} alt={product.name} />
-                        <img src={product.image_url} alt={product.name} />
-                    </div>
                 </section>
 
                 <section className="panel product-buy-box">
-                    {/* <p className="badge">Product Detail</p> */}
                     <h2>{product.name}</h2>
-                    <p className="product-brand">Thuong hieu: {product.brand}</p>
+                    <p className="product-brand">Thương hiệu: <strong>{product.brand}</strong></p>
                     <div className="rating-line">
                         <span>{'★'.repeat(Math.round(Number(avgRating)))}</span>
-                        <small>{avgRating}/5 ({productReviews.length} danh gia)</small>
+                        <small>{avgRating}/5 ({reviews.length} đánh giá)</small>
                     </div>
                     <h3 className="price-tag">{formatPrice(product.price)}</h3>
                     <p className="product-desc">{product.description}</p>
                     <div className="stats-row">
-                        <span>Category: {categoryName}</span>
-                        <span>Con lai: {product.stock} chai</span>
+                        <span>Danh mục: {categoryName}</span>
+                        <span>Còn lại: {product.stock} chai</span>
                     </div>
+
+                    <div className="detail-info-list">
+                        <div className="detail-info-item">
+                            <span className="detail-info-label">Xuất xứ</span>
+                            <span className="detail-info-value">{product.brand}</span>
+                        </div>
+                        <div className="detail-info-item">
+                            <span className="detail-info-label">Loại hương</span>
+                            <span className="detail-info-value">{product.name}</span>
+                        </div>
+                        <div className="detail-info-item">
+                            <span className="detail-info-label">Tình trạng</span>
+                            <span className="detail-info-value">{product.stock > 0 ? 'Còn hàng' : 'Hết hàng'}</span>
+                        </div>
+                        <div className="detail-info-item">
+                            <span className="detail-info-label">Mã sản phẩm</span>
+                            <span className="detail-info-value">SP{String(product.id).padStart(4, '0')}</span>
+                        </div>
+                        <div className="detail-info-item">
+                            <span className="detail-info-label">Danh mục</span>
+                            <span className="detail-info-value">{categoryName}</span>
+                        </div>
+                    </div>
+
                     <div className="buy-actions">
                         <div className="qty-box">
-                            <span>So luong</span>
+                            <span>Số lượng</span>
                             <div className="qty-control">
                                 <button type="button" onClick={decreaseQty}>-</button>
                                 <input type="text" value={quantity} readOnly />
                                 <button type="button" onClick={increaseQty}>+</button>
                             </div>
                         </div>
-                        <button
-                            type="button"
-                            className="btn-primary"
-                            onClick={() => onAddToCart && onAddToCart(product.id, quantity)}
-                        >
-                            Them vao gio hang
-                        </button>
-                        <button
-                            type="button"
-                            className="ghost-btn"
-                            onClick={() => onBuyNow && onBuyNow(product.id, quantity)}
-                        >
-                            Mua ngay
-                        </button>
+                        <div className="buy-actions-row">
+                            <button
+                                type="button"
+                                className="btn-primary"
+                                onClick={() => onAddToCart && onAddToCart(product.id, quantity)}
+                            >
+                                Thêm vào giỏ hàng
+                            </button>
+                            <button
+                                type="button"
+                                className="ghost-btn"
+                                onClick={() => onBuyNow && onBuyNow(product.id, quantity)}
+                            >
+                                Mua ngay
+                            </button>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -139,29 +194,63 @@ export default function ProductDetailPage({
             <section className="panel shipping-notes">
                 <article>
                     <strong>Giao nhanh</strong>
-                    <p>Noi thanh 2h, ngoai thanh 1-3 ngay.</p>
+                    <p>Nội thành 2h, ngoại thành 1-3 ngày.</p>
                 </article>
                 <article>
-                    <strong>Cam ket chinh hang</strong>
-                    <p>Hoan tien 200% neu phat hien hang gia.</p>
+                    <strong>Cam kết chính hãng</strong>
+                    <p>Hoàn tiền 200% nếu phát hiện hàng giả.</p>
                 </article>
                 <article>
-                    <strong>Ho tro doi tra</strong>
-                    <p>Doi tra 7 ngay neu loi nha san xuat.</p>
+                    <strong>Hỗ trợ đổi trả</strong>
+                    <p>Đổi trả 7 ngày nếu lỗi nhà sản xuất.</p>
                 </article>
             </section>
 
             <section className="panel full">
                 <div className="panel-head">
-                    <h2>Danh gia san pham</h2>
-                    <p>Danh gia tu khach da mua hang</p>
+                    <h2>Đánh giá sản phẩm</h2>
+                    <p>{avgRating}/5 — {reviews.length} đánh giá từ khách đã mua hàng</p>
                 </div>
+
+                <form className="review-form" onSubmit={handleSubmitReview}>
+                    <div className="review-form-rating">
+                        <span>Đánh giá của bạn:</span>
+                        <div className="star-picker">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                                <button
+                                    key={s}
+                                    type="button"
+                                    className={s <= reviewForm.rating ? 'star active' : 'star'}
+                                    onClick={() => setReviewForm((p) => ({ ...p, rating: s }))}
+                                >★</button>
+                            ))}
+                        </div>
+                    </div>
+                    <textarea
+                        className="review-textarea"
+                        placeholder="Nhập nhận xét của bạn..."
+                        value={reviewForm.comment}
+                        onChange={(e) => setReviewForm((p) => ({ ...p, comment: e.target.value }))}
+                        rows={3}
+                    />
+                    <div className="review-form-footer">
+                        {reviewMsg ? <span className="review-msg">{reviewMsg}</span> : <span />}
+                        <button type="submit" className="btn-primary review-submit-btn" disabled={isSubmittingReview}>
+                            {isSubmittingReview ? 'Đang gửi...' : 'Gửi đánh giá'}
+                        </button>
+                    </div>
+                </form>
+
                 <div className="review-list">
-                    {productReviews.map((review) => (
-                        <article key={review.id} className="review-item">
-                            <strong>{'★'.repeat(review.rating)}</strong>
-                            <p>{review.comment}</p>
-                            <small>{review.created_at}</small>
+                    {reviews.length === 0 ? (
+                        <p className="review-empty">Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
+                    ) : reviews.map((review, idx) => (
+                        <article key={review.id ?? idx} className="review-item">
+                            <div className="review-header">
+                                <span className="review-stars">{'★'.repeat(Number(review.rating))}{'☆'.repeat(5 - Number(review.rating))}</span>
+                                <small className="review-date">{review.created_at ? new Date(review.created_at).toLocaleDateString('vi-VN') : ''}</small>
+                            </div>
+                            <p className="review-comment">{review.comment}</p>
                         </article>
                     ))}
                 </div>

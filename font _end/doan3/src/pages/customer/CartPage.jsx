@@ -21,12 +21,12 @@ export default function CartPage({ cartItems = [], productsData = [], onGoChecko
         <section className="cart-layout">
             <div className="panel">
                 <div className="panel-head">
-                    <h2>Gio hang cua ban</h2>
-                    <p>Du lieu tu cart va cart_items</p>
+                    <h2>Giỏ hàng của bạn</h2>
+                    <p>Kiểm tra các sản phẩm bạn đã thêm vào giỏ hàng.</p>
                 </div>
                 <div className="cart-list">
                     {rows.length === 0 ? (
-                        <p>Chua co san pham trong gio hang.</p>
+                        <p>Chưa có sản phẩm trong giỏ hàng.</p>
                     ) : (
                         rows.map((row) => (
                             <article key={row.id} className="cart-item">
@@ -56,22 +56,22 @@ export default function CartPage({ cartItems = [], productsData = [], onGoChecko
             </div>
 
             <aside className="panel cart-summary-card">
-                <h3>Tam tinh don hang</h3>
-                <p>{rows.length} san pham</p>
+                <h3>Tạm tính đơn hàng</h3>
+                <p>{rows.length} sản phẩm</p>
                 <div className="summary-line">
-                    <span>Tong tien hang</span>
+                    <span>Tổng tiền hàng </span>
                     <strong>{formatPrice(grandTotal)}</strong>
                 </div>
                 <div className="summary-line">
-                    <span>Phi ship</span>
+                    <span>Phí ship</span>
                     <strong>{formatPrice(30000)}</strong>
                 </div>
                 <div className="summary-line total">
-                    <span>Thanh toan</span>
+                    <span>Thanh toán</span>
                     <strong>{formatPrice(grandTotal + 30000)}</strong>
                 </div>
                 <button type="button" className="btn-primary" onClick={onGoCheckout}>
-                    Tien hanh thanh toan
+                    Tiến hành thanh toán
                 </button>
             </aside>
         </section>
