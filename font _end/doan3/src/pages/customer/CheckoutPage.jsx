@@ -7,6 +7,7 @@ export default function CheckoutPage({ cartItems = [], productsData = [], userId
     const [address, setAddress] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [message, setMessage] = useState('')
+    const [isSuccess, setIsSuccess] = useState(false)
 
     const subtotal = cartItems.reduce((sum, item) => {
         const product = productsData.find((p) => p.id === item.product_id)
@@ -22,17 +23,20 @@ export default function CheckoutPage({ cartItems = [], productsData = [], userId
         }
         setIsLoading(true)
         setMessage('')
+        setIsSuccess(false)
         const { ok, payload } = await apiRequest('/api/orders/checkout', {
             method: 'POST',
             body: JSON.stringify({ user_id: userId, address, phone }),
         })
         setIsLoading(false)
         if (ok && payload?.success) {
-            setMessage(`Đặt hàng thành công! Mã đơn hàng: #${payload.data?.order_id}`)
+            setIsSuccess(true)
+            setMessage(`Đặt hàng thành công! Mã đơn hàng: #${payload.data?.order_id || payload.order_id}`)
             setTimeout(() => {
                 if (onCheckoutSuccess) onCheckoutSuccess()
             }, 2500)
         } else {
+            setIsSuccess(false)
             setMessage(payload?.message || 'Đặt hàng thất bại. Vui lòng thử lại.')
         }
     }
@@ -72,7 +76,11 @@ export default function CheckoutPage({ cartItems = [], productsData = [], userId
                         <input type="text" value={formatPrice(total)} readOnly />
                     </label>
                 </div>
-                {message ? <p className="checkout-msg">{message}</p> : null}
+                {message ? (
+                    <p className="checkout-msg" style={{ color: isSuccess ? '#2e7d32' : '#c8102e' }}>
+                        {message}
+                    </p>
+                ) : null}
             </div>
 
             <aside className="checkout-summary">

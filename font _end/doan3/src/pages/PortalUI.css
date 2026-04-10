@@ -237,15 +237,34 @@
     border: 1px solid var(--gold-border);
     border-radius: 8px;
     background: #fff;
-    color: var(--app-text);
-    padding: 0 10px;
-    font-size: 12px;
-    font-weight: 700;
+    color: #7a5c2a;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: 600;
     cursor: pointer;
 }
 
 .shop-account-tools .logout-btn {
     height: 34px;
+    border: 1px solid var(--gold-border);
+    background: #fff;
+    color: #7a5c2a;
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.shop-account-tools .ghost-btn {
+    height: 34px;
+    border: 1px solid var(--gold-border);
+    background: #fff;
+    color: #7a5c2a;
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
 }
 
 .shop-catalog-page {
@@ -372,10 +391,44 @@
 
 .portal-header {
     display: flex;
-    justify-content: space-between;
-    align-items: end;
+    align-items: center;
     gap: 16px;
     margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.portal-header-brand {
+    flex-shrink: 0;
+}
+
+.admin-header-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex: 1;
+}
+
+.admin-header-tabs .tab-item {
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1px solid #d4a853;
+    background: transparent;
+    color: #7a5a2a;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+    white-space: nowrap;
+}
+
+.admin-header-tabs .tab-item:hover {
+    background: #f5e6cc;
+}
+
+.admin-header-tabs .tab-item.active {
+    background: linear-gradient(135deg, #c9a84c, #b8872a);
+    color: #fff;
+    border-color: transparent;
 }
 
 .portal-eyebrow {
@@ -522,6 +575,79 @@
     border-color: #9b5c3b;
     color: #fff;
     background: linear-gradient(90deg, #9b5c3b, #7a4328);
+}
+
+.drawer-toggle-btn {
+    border: 1px solid #e5cdbd;
+    background: #fff;
+    color: #6a4431;
+    border-radius: 10px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.admin-drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 120;
+}
+
+.admin-drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: min(340px, 90vw);
+    background: #f8f2e7;
+    border-right: 1px solid #e5cdbd;
+    padding: 16px;
+    z-index: 130;
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    transform: translateX(-102%);
+    transition: transform 220ms ease;
+}
+
+.admin-drawer.open {
+    transform: translateX(0);
+}
+
+.admin-drawer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.admin-drawer-head h3 {
+    margin: 0;
+    color: #5e3b2a;
+}
+
+.drawer-close-btn {
+    border: 1px solid #dfc5b4;
+    background: #fff;
+    color: #7c4a31;
+    border-radius: 10px;
+    width: 34px;
+    height: 34px;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.admin-drawer-tabs {
+    justify-content: flex-start;
+}
+
+.admin-drawer-tabs .tab-item {
+    width: 100%;
+    text-align: left;
+}
+
+.admin-drawer-logout {
+    width: 100%;
 }
 
 .logout-btn {
@@ -1128,8 +1254,17 @@
 .table-wrap {
     margin-top: 10px;
     overflow-x: auto;
+    overflow-y: auto;
+    max-height: 420px;
     border: 1px solid #ecd8cc;
     border-radius: 12px;
+}
+
+.table-wrap thead th {
+    position: sticky;
+    top: 0;
+    background: #fdf6ee;
+    z-index: 1;
 }
 
 table {
@@ -1320,6 +1455,16 @@ th {
     font-size: 14px;
 }
 
+.field textarea {
+    border: 1px solid #e4cdbf;
+    border-radius: 10px;
+    background: #fff;
+    padding: 8px 10px;
+    color: #3b1f10;
+    font-size: 14px;
+    resize: vertical;
+}
+
 .full-row {
     grid-column: 1 / -1;
 }
@@ -1358,6 +1503,38 @@ th {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
+}
+
+.order-status-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border-bottom: 2px solid #e8d5c0;
+    margin-bottom: 20px;
+}
+
+.order-tab-btn {
+    padding: 10px 18px;
+    border: none;
+    background: transparent;
+    color: #7a5c2a;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.order-tab-btn:hover {
+    color: #b8872a;
+}
+
+.order-tab-btn.active {
+    color: #b8872a;
+    font-weight: 700;
+    border-bottom: 2px solid #b8872a;
 }
 
 .order-card {
@@ -1399,6 +1576,78 @@ th {
     background: #a44f4f;
 }
 
+.admin-status-msg {
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #f8f1e3;
+    border: 1px solid #e6cfbf;
+    color: #6b4d1f;
+    font-size: 14px;
+}
+
+.admin-status-msg.error {
+    background: #fdeaea;
+    border-color: #efc1c1;
+    color: #9f3434;
+}
+
+.admin-toolbar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.admin-toolbar input {
+    min-width: 240px;
+    border: 1px solid #e6cfbf;
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: #fff;
+}
+
+.admin-row-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.admin-stat-grid {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admin-stat-card {
+    border: 1px solid #ebd6c8;
+    border-radius: 12px;
+    padding: 12px;
+    background: #fff;
+}
+
+.admin-stat-card p {
+    margin: 0 0 6px;
+    color: #8c5c25;
+    font-size: 13px;
+}
+
+.admin-stat-card strong {
+    font-size: 22px;
+    color: #3d2a0a;
+}
+
+.disabled-row {
+    opacity: 0.45;
+    background: #f5f0ea;
+    text-decoration-color: #aaa;
+}
+
+.disabled-row td {
+    color: #aaa;
+}
+
 @media (max-width: 1024px) {
     .portal-header {
         flex-direction: column;
@@ -1416,6 +1665,10 @@ th {
     .shop-account-tools,
     .shop-top-links {
         flex-wrap: wrap;
+    }
+
+    .admin-stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .catalog-cards {
@@ -1490,6 +1743,10 @@ th {
     .cart-pill,
     .logout-btn {
         width: 100%;
+    }
+
+    .admin-stat-grid {
+        grid-template-columns: 1fr;
     }
 
     .product-actions,

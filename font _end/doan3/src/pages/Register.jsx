@@ -12,6 +12,8 @@ export default function Register({ onSwitchToLogin, onRegister }) {
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirm, setShowConfirm] = useState(false)
     const [errors, setErrors] = useState({})
+    const [serverMsg, setServerMsg] = useState('')
+    const [successMsg, setSuccessMsg] = useState('')
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value })
@@ -28,15 +30,23 @@ export default function Register({ onSwitchToLogin, onRegister }) {
         return newErrors
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
         const newErrors = validate()
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors)
             return
         }
+        setServerMsg('')
+        setSuccessMsg('')
         if (onRegister) {
-            onRegister(form)
+            const result = await onRegister(form)
+            if (result?.success) {
+                setSuccessMsg('Đăng ký thành công! Đang chuyển đến trang đăng nhập...')
+                setTimeout(() => onSwitchToLogin(), 1500)
+            } else {
+                setServerMsg(result?.message || 'Đăng ký thất bại.')
+            }
         }
     }
 
@@ -56,6 +66,8 @@ export default function Register({ onSwitchToLogin, onRegister }) {
                 <p className="auth-subtitle">Tạo tài khoản và khám phá thế giới hương thơm</p>
 
                 <form onSubmit={handleSubmit} className="auth-form">
+                    {serverMsg && <p className="error-msg" style={{ textAlign: 'center', marginBottom: '8px' }}>{serverMsg}</p>}
+                    {successMsg && <p style={{ textAlign: 'center', color: '#2e7d32', fontSize: '14px', marginBottom: '8px' }}>{successMsg}</p>}
                     <div className="form-group">
                         <label className="form-label">Họ và tên</label>
                         <div className="input-wrapper">

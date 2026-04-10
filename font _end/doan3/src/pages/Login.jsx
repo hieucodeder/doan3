@@ -5,6 +5,7 @@ export default function Login({ onSwitchToRegister, onLogin }) {
     const [form, setForm] = useState({ email: '', password: '' })
     const [showPassword, setShowPassword] = useState(false)
     const [error, setError] = useState('')
+    const [errorType, setErrorType] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [successMsg, setSuccessMsg] = useState('')
 
@@ -19,11 +20,13 @@ export default function Login({ onSwitchToRegister, onLogin }) {
         setIsSubmitting(false)
 
         if (!result.success) {
-            setError(result.message || 'Dang nhap that bai')
+            setError(result.message || 'Đăng nhập thất bại')
+            setErrorType(result.type || '')
             setSuccessMsg('')
             return
         }
         setError('')
+        setErrorType('')
         setSuccessMsg('Đăng nhập thành công! Đang chuyển trang...')
     }
 
@@ -94,7 +97,11 @@ export default function Login({ onSwitchToRegister, onLogin }) {
                         <span>{isSubmitting ? 'Đang xử lý...' : 'Đăng Nhập'}</span>
                     </button>
                     {successMsg ? <p className="success-msg auth-form-success">{successMsg}</p> : null}
-                    {error ? <p className="error-msg auth-form-error">{error}</p> : null}
+                    {error && errorType === 'inactive' ? (
+                        <p className="warning-msg auth-form-warning">🔒 {error}</p>
+                    ) : error ? (
+                        <p className="error-msg auth-form-error">{error}</p>
+                    ) : null}
                 </form>
 
                 <div className="auth-divider">

@@ -8,13 +8,14 @@ import ProductDetailPage from './customer/ProductDetailPage'
 import CartPage from './customer/CartPage'
 import CheckoutPage from './customer/CheckoutPage'
 import MyOrdersPage from './customer/MyOrdersPage'
+import AboutPage from './customer/AboutPage'
 import { apiRequest, resolveImageUrl } from '../services/apiClient'
 
 import UsersPage from './admin/UsersPage'
 import CategoriesPage from './admin/CategoriesPage'
 import ProductsPage from './admin/ProductsPage'
 import OrdersPage from './admin/OrdersPage'
-import ReviewsPage from './admin/ReviewsPage'
+import DashboardPage from './admin/DashboardPage'
 
 const customerTabs = [
     { key: 'home', label: 'Home' },
@@ -25,11 +26,11 @@ const customerTabs = [
 ]
 
 const adminTabs = [
-    { key: 'users', label: 'Users' },
-    { key: 'categories', label: 'Categories' },
-    { key: 'products', label: 'Products' },
-    { key: 'orders', label: 'Orders' },
-    { key: 'reviews', label: 'Reviews' },
+    { key: 'dashboard', label: 'Dashboard' },
+    { key: 'products', label: 'Sản phẩm' },
+    { key: 'orders', label: 'Đơn hàng' },
+    { key: 'users', label: 'Khách hàng' },
+    { key: 'categories', label: 'Danh mục' },
 ]
 
 function CustomerPages({
@@ -76,20 +77,22 @@ function CustomerPages({
         return <CartPage cartItems={cartItems} productsData={productsData} onGoCheckout={onGoCheckout} onRemoveFromCart={onRemoveFromCart} onUpdateCartQty={onUpdateCartQty} />
     }
     if (activeTab === 'checkout') return <CheckoutPage cartItems={cartItems} productsData={productsData} userId={userId} onCheckoutSuccess={onCheckoutSuccess} />
+    if (activeTab === 'about') return <AboutPage />
     return <MyOrdersPage userId={userId} />
 }
 
 function AdminPages({ activeTab }) {
-    if (activeTab === 'users') return <UsersPage />
-    if (activeTab === 'categories') return <CategoriesPage />
+    if (activeTab === 'dashboard') return <DashboardPage />
     if (activeTab === 'products') return <ProductsPage />
     if (activeTab === 'orders') return <OrdersPage />
-    return <ReviewsPage />
+    if (activeTab === 'users') return <UsersPage />
+    if (activeTab === 'categories') return <CategoriesPage />
+    return <DashboardPage />
 }
 
 export default function PortalUI({ role = 'user', userName = 'Khach hang', onLogout, userId }) {
     const [customerTab, setCustomerTab] = useState('home')
-    const [adminTab, setAdminTab] = useState('users')
+    const [adminTab, setAdminTab] = useState('dashboard')
     const [selectedProductId, setSelectedProductId] = useState(1)
     const [cartItems, setCartItems] = useState([])
     const [selectedCatalog, setSelectedCatalog] = useState('all')

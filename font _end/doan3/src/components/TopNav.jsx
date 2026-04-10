@@ -56,6 +56,7 @@ export default function TopNav({
 }) {
     const [keyword, setKeyword] = useState('')
     const [showLogoutDialog, setShowLogoutDialog] = useState(false)
+    const [isAdminDrawerOpen, setIsAdminDrawerOpen] = useState(false)
     const timerRef = useRef(null)
 
     useEffect(() => {
@@ -74,6 +75,17 @@ export default function TopNav({
     const handleKeyDown = (e) => {
         if (e.key === 'Enter') handleSearch()
     }
+
+    useEffect(() => {
+        if (!isAdminDrawerOpen) return undefined
+
+        const handleEsc = (e) => {
+            if (e.key === 'Escape') setIsAdminDrawerOpen(false)
+        }
+
+        window.addEventListener('keydown', handleEsc)
+        return () => window.removeEventListener('keydown', handleEsc)
+    }, [isAdminDrawerOpen])
 
     if (roleLabel === 'customer') {
         const menuItems = [
@@ -111,15 +123,16 @@ export default function TopNav({
                             </div>
                         </div>
                         <div className="shop-top-links">
-                            <span>Giới thiệu về shop</span>
-                            <button type="button" onClick={() => onChangeTab('my-orders')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', font: 'inherit', padding: 0 }}>Lịch sử mua hàng</button>
+                            <button type="button" onClick={() => onChangeTab('about')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 'inherit', padding: 0 }}>
+                                Giới thiệu về shop
+                            </button>
                         </div>
                     </div>
 
                     <div className="shop-main-nav">
                         <div className="logo-block">
-                            <h1>ORCHID</h1>
-                            <p>Perfumes & Cosmetics</p>
+                            <h1>NGỌC ÁNH</h1>
+                            <p>Perfumes</p>
                         </div>
 
                         <nav className="shop-menu-links">
@@ -140,6 +153,9 @@ export default function TopNav({
                             <button type="button" className="cart-pill" onClick={() => onChangeTab('cart')}>
                                 Giỏ hàng
                                 <span className="cart-dot">{cartCount}</span>
+                            </button>
+                            <button type="button" className="ghost-btn" onClick={() => onChangeTab('my-orders')}>
+                                Đơn hàng của bạn
                             </button>
                             {onLogout ? (
                                 <button type="button" className="logout-btn" onClick={() => setShowLogoutDialog(true)}>
@@ -162,30 +178,27 @@ export default function TopNav({
                 />
             )}
             <header className="portal-header">
-                <div>
+                <div className="portal-header-brand">
                     <p className="portal-eyebrow">Doan3 Perfume Shop</p>
                     <h1>{title}</h1>
-                    {roleLabel ? <p className="role-label">Vai tro: {roleLabel}</p> : null}
                 </div>
-                <div className="topnav-actions">
-                    <div className="tab-list">
-                        {tabs.map((tab) => (
-                            <button
-                                type="button"
-                                key={tab.key}
-                                onClick={() => onChangeTab(tab.key)}
-                                className={activeTab === tab.key ? 'tab-item active' : 'tab-item'}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
-                    </div>
-                    {onLogout ? (
-                        <button type="button" className="logout-btn" onClick={() => setShowLogoutDialog(true)}>
-                            Đăng xuất
+                <nav className="admin-header-tabs">
+                    {tabs.map((tab) => (
+                        <button
+                            type="button"
+                            key={tab.key}
+                            onClick={() => onChangeTab(tab.key)}
+                            className={activeTab === tab.key ? 'tab-item active' : 'tab-item'}
+                        >
+                            {tab.label}
                         </button>
-                    ) : null}
-                </div>
+                    ))}
+                </nav>
+                {onLogout ? (
+                    <button type="button" className="logout-btn" onClick={() => setShowLogoutDialog(true)}>
+                        Đăng xuất
+                    </button>
+                ) : null}
             </header>
         </>
     )
