@@ -1,10 +1,10 @@
 const db = require("../config/db");
 
 // Tạo sản phẩm mới
-const createProduct = async (name, description, price, stock, category_id, image_url) => {
+const createProduct = async (name, brand, price, stock, description, image_url, category_id) => {
     const [rows] = await db.query(
-        "CALL sp_create_product(?, ?, ?, ?, ?, ?)",
-        [name, description, price, stock, category_id, image_url]
+        "CALL sp_create_product(?, ?, ?, ?, ?, ?, ?)",
+        [name, brand, price, stock, description, image_url, category_id]
     );
     return rows[0];
 };
@@ -15,11 +15,11 @@ const getProducts = async () => {
     return rows[0];
 };
 
-// Cập nhật thông tin sản phẩm theo id
-const updateProduct = async (id, name, description, price, stock, category_id, image_url) => {
+// Cập nhật đầy đủ thông tin sản phẩm theo id
+const updateProduct = async (id, name, brand, price, stock, description, image_url, category_id) => {
     const [rows] = await db.query(
-        "CALL sp_update_product(?, ?, ?, ?, ?, ?, ?)",
-        [id, name, description, price, stock, category_id, image_url]
+        "CALL sp_update_product_full(?, ?, ?, ?, ?, ?, ?, ?)",
+        [id, name, brand, price, stock, description, image_url, category_id]
     );
     return rows[0];
 };
@@ -42,4 +42,13 @@ const searchProducts = async (keyword = "", category_id = 0) => {
     return rows[0];
 };
 
-module.exports = { createProduct, getProducts, updateProduct, getProductById, searchProducts };
+// Xóa sản phẩm (SP kiểm tra nếu đã có trong order thì không cho xóa)
+const deleteProduct = async (id) => {
+    const [rows] = await db.query(
+        "CALL sp_delete_product(?)",
+        [id]
+    );
+    return rows[0][0]?.message || null;
+};
+
+module.exports = { createProduct, getProducts, updateProduct, getProductById, searchProducts, deleteProduct };

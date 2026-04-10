@@ -2,14 +2,14 @@ const productService = require("../services/productService");
 
 // POST /api/products - Tạo sản phẩm mới
 const createProduct = async (req, res) => {
-    const { name, description, price, stock, category_id, image_url } = req.body;
+    const { name, brand, price, stock, description, image_url, category_id } = req.body;
 
-    if (!name || price == null) {
-        return res.status(400).json({ success: false, message: "name và price là bắt buộc" });
+    if (!name || !brand || price == null) {
+        return res.status(400).json({ success: false, message: "name, brand và price là bắt buộc" });
     }
 
     try {
-        const data = await productService.createProduct(name, description, price, stock, category_id, image_url);
+        const data = await productService.createProduct(name, brand, price, stock, description, image_url, category_id);
         res.status(201).json({ success: true, data });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -29,10 +29,14 @@ const getProducts = async (req, res) => {
 // PUT /api/products/:id - Cập nhật sản phẩm
 const updateProduct = async (req, res) => {
     const { id } = req.params;
-    const { name, description, price, stock, category_id, image_url } = req.body;
+    const { name, brand, price, stock, description, image_url, category_id } = req.body;
+
+    if (!name || !brand || price == null) {
+        return res.status(400).json({ success: false, message: "name, brand và price là bắt buộc" });
+    }
 
     try {
-        const data = await productService.updateProduct(id, name, description, price, stock, category_id, image_url);
+        const data = await productService.updateProduct(id, name, brand, price, stock, description, image_url, category_id);
         res.json({ success: true, data });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -66,4 +70,21 @@ const searchProducts = async (req, res) => {
     }
 };
 
-module.exports = { createProduct, getProducts, updateProduct, getProductById, searchProducts };
+// DELETE /api/products/:id - Xóa sản phẩm
+const deleteProduct = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const message = await productService.deleteProduct(id);
+
+        if (message === "PRODUCT_IN_ORDER") {
+            return res.status(400).json({ success: false, message: "Sản phẩm đã có trong đơn hàng, không thể xóa" });
+        }
+
+        res.json({ success: true, message: "Xóa sản phẩm thành công" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+module.exports = { createProduct, getProducts, updateProduct, getProductById, searchProducts, deleteProduct };

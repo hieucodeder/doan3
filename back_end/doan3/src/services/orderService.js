@@ -43,4 +43,31 @@ const getOrderHistoryByUser = async (user_id) => {
     return rows[0];
 };
 
-module.exports = { createOrder, getOrders, updateOrderStatus, checkoutOrder, getOrderHistoryByUser };
+// Lấy chi tiết đơn hàng theo order_id
+const getOrderDetail = async (order_id) => {
+    const [rows] = await db.query(
+        "CALL sp_get_order_detail(?)",
+        [order_id]
+    );
+    return rows[0];
+};
+
+// Huỷ đơn hàng (chỉ được huỷ khi đơn ở trạng thái pending)
+const cancelOrder = async (order_id, user_id) => {
+    const [rows] = await db.query(
+        "CALL sp_cancel_order_by_user(?, ?)",
+        [order_id, user_id]
+    );
+    return rows[0][0]?.message || null;
+};
+
+// Lấy danh sách đơn theo user, có thể lọc theo trạng thái
+const getOrdersByUserWithStatus = async (user_id, status = null) => {
+    const [rows] = await db.query(
+        "CALL sp_get_orders_by_user_with_status(?, ?)",
+        [user_id, status]
+    );
+    return rows[0];
+};
+
+module.exports = { createOrder, getOrders, updateOrderStatus, checkoutOrder, getOrderHistoryByUser, getOrderDetail, cancelOrder, getOrdersByUserWithStatus };

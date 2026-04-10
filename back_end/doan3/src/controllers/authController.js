@@ -2,14 +2,14 @@ const authService = require("../services/authService");
 
 // POST /api/auth/register - Đăng ký tài khoản
 const register = async (req, res) => {
-    const { name, email, password, role = "user" } = req.body;
+    const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
         return res.status(400).json({ success: false, message: "name, email, password là bắt buộc" });
     }
 
     try {
-        const message = await authService.registerUser(name, email, password, role);
+        const message = await authService.registerUser(name, email, password, "user");
 
         if (message === "EMAIL_EXISTS") {
             return res.status(409).json({ success: false, message: "Email đã được sử dụng" });

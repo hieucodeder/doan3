@@ -15,4 +15,13 @@ const getCategories = async () => {
     return rows[0];
 };
 
-module.exports = { createCategory, getCategories };
+// Xóa danh mục (SP kiểm tra nếu còn sản phẩm thì không cho xóa)
+const deleteCategory = async (id) => {
+    const [rows] = await db.query(
+        "CALL sp_delete_category(?)",
+        [id]
+    );
+    return rows[0][0]?.message || null;
+};
+
+module.exports = { createCategory, getCategories, deleteCategory };

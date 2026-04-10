@@ -26,4 +26,21 @@ const getCategories = async (req, res) => {
     }
 };
 
-module.exports = { createCategory, getCategories };
+// DELETE /api/categories/:id - Xóa danh mục
+const deleteCategory = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const message = await categoryService.deleteCategory(id);
+
+        if (message === "CATEGORY_HAS_PRODUCTS") {
+            return res.status(400).json({ success: false, message: "Danh mục đang có sản phẩm, không thể xóa" });
+        }
+
+        res.json({ success: true, message: "Xóa danh mục thành công" });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+module.exports = { createCategory, getCategories, deleteCategory };
