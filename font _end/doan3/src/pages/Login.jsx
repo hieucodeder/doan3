@@ -38,7 +38,7 @@ export default function Login({ onSwitchToRegister, onLogin }) {
                 {/* Logo / Brand */}
                 <div className="auth-brand">
                     <div className="brand-icon">✦</div>
-                    <h1 className="brand-name">LUXE PARFUM</h1>
+                    <h1 className="brand-name">NGỌC ÁNH PARFUM</h1>
                     <p className="brand-tagline">Hành trình của hương thơm</p>
                 </div>
 
