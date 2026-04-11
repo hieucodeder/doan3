@@ -1,6 +1,6 @@
 import { formatPrice } from '../../data/mockData'
 
-export default function CartPage({ cartItems = [], productsData = [], onGoCheckout, onRemoveFromCart, onUpdateCartQty }) {
+export default function CartPage({ cartItems = [], productsData = [], onGoCheckout, onRemoveFromCart, onUpdateCartQty, onOpenProduct }) {
     const rows = cartItems.map((item) => {
         const product = productsData.find((p) => p.id === item.product_id)
         const total = (product?.price || 0) * item.quantity
@@ -29,14 +29,14 @@ export default function CartPage({ cartItems = [], productsData = [], onGoChecko
                         <p>Chưa có sản phẩm trong giỏ hàng.</p>
                     ) : (
                         rows.map((row) => (
-                            <article key={row.id} className="cart-item">
+                            <article key={row.id} className="cart-item" onClick={() => onOpenProduct && onOpenProduct(row.product_id)} style={{ cursor: 'pointer' }}>
                                 <img src={row.image_url} alt={row.product_name} />
                                 <div>
                                     <h3>{row.product_name}</h3>
                                     <p>{row.brand}</p>
                                     <small>Gia: {row.price}</small>
                                 </div>
-                                <div className="cart-qty">
+                                <div className="cart-qty" onClick={(e) => e.stopPropagation()}>
                                     <button type="button" onClick={() => onUpdateCartQty && onUpdateCartQty(row.product_id, row.quantity - 1)}>-</button>
                                     <span>{row.quantity}</span>
                                     <button type="button" onClick={() => onUpdateCartQty && onUpdateCartQty(row.product_id, row.quantity + 1)}>+</button>
@@ -45,7 +45,7 @@ export default function CartPage({ cartItems = [], productsData = [], onGoChecko
                                 <button
                                     type="button"
                                     className="cart-remove-btn"
-                                    onClick={() => onRemoveFromCart && onRemoveFromCart(row.product_id)}
+                                    onClick={(e) => { e.stopPropagation(); onRemoveFromCart && onRemoveFromCart(row.product_id) }}
                                 >
                                     ✕
                                 </button>

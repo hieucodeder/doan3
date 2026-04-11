@@ -74,7 +74,7 @@ function CustomerPages({
         )
     }
     if (activeTab === 'cart') {
-        return <CartPage cartItems={cartItems} productsData={productsData} onGoCheckout={onGoCheckout} onRemoveFromCart={onRemoveFromCart} onUpdateCartQty={onUpdateCartQty} />
+        return <CartPage cartItems={cartItems} productsData={productsData} onGoCheckout={onGoCheckout} onRemoveFromCart={onRemoveFromCart} onUpdateCartQty={onUpdateCartQty} onOpenProduct={onOpenProduct} />
     }
     if (activeTab === 'checkout') return <CheckoutPage cartItems={cartItems} productsData={productsData} userId={userId} onCheckoutSuccess={onCheckoutSuccess} />
     if (activeTab === 'about') return <AboutPage />

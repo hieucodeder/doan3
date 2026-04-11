@@ -179,7 +179,7 @@ export default function TopNav({
             )}
             <header className="portal-header">
                 <div className="portal-header-brand">
-                    <p className="portal-eyebrow">Doan3 Perfume Shop</p>
+                    <p className="portal-eyebrow">NGỌC ÁNH Perfume Shop</p>
                     <h1>{title}</h1>
                 </div>
                 <nav className="admin-header-tabs">

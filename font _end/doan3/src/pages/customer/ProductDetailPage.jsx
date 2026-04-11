@@ -20,6 +20,7 @@ export default function ProductDetailPage({
     const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' })
     const [reviewMsg, setReviewMsg] = useState('')
     const [isSubmittingReview, setIsSubmittingReview] = useState(false)
+    const [addedMsg, setAddedMsg] = useState('')
 
     useEffect(() => {
         let isMounted = true
@@ -99,6 +100,13 @@ export default function ProductDetailPage({
         ? (reviews.reduce((sum, r) => sum + Number(r.rating), 0) / reviews.length).toFixed(1)
         : '0.0'
 
+    const handleAddToCart = () => {
+        if (onAddToCart) onAddToCart(product.id, quantity)
+        setAddedMsg(`Đã thêm ${quantity} sản phẩm vào giỏ hàng!`)
+        clearTimeout(window.__addedMsgTimer)
+        window.__addedMsgTimer = setTimeout(() => setAddedMsg(''), 2500)
+    }
+
     const increaseQty = () => setQuantity((prev) => Math.min(prev + 1, Math.max(product.stock || 1, 1)))
     const decreaseQty = () => setQuantity((prev) => Math.max(prev - 1, 1))
 
@@ -141,11 +149,11 @@ export default function ProductDetailPage({
 
                     <div className="detail-info-list">
                         <div className="detail-info-item">
-                            <span className="detail-info-label">Xuất xứ</span>
+                            <span className="detail-info-label">Thương hiệu</span>
                             <span className="detail-info-value">{product.brand}</span>
                         </div>
                         <div className="detail-info-item">
-                            <span className="detail-info-label">Loại hương</span>
+                            <span className="detail-info-label">Loại sản phẩm</span>
                             <span className="detail-info-value">{product.name}</span>
                         </div>
                         <div className="detail-info-item">
@@ -175,7 +183,7 @@ export default function ProductDetailPage({
                             <button
                                 type="button"
                                 className="btn-primary"
-                                onClick={() => onAddToCart && onAddToCart(product.id, quantity)}
+                                onClick={handleAddToCart}
                             >
                                 Thêm vào giỏ hàng
                             </button>
@@ -188,6 +196,20 @@ export default function ProductDetailPage({
                             </button>
                         </div>
                     </div>
+                    {addedMsg ? (
+                        <div style={{
+                            marginTop: '10px',
+                            padding: '10px 14px',
+                            background: '#f0fdf4',
+                            border: '1px solid #86efac',
+                            borderRadius: '10px',
+                            color: '#166534',
+                            fontSize: '14px',
+                            fontWeight: 600,
+                        }}>
+                            ✓ {addedMsg}
+                        </div>
+                    ) : null}
                 </section>
             </div>
 
@@ -247,9 +269,10 @@ export default function ProductDetailPage({
                     ) : reviews.map((review, idx) => (
                         <article key={review.id ?? idx} className="review-item">
                             <div className="review-header">
-                                <span className="review-stars">{'★'.repeat(Number(review.rating))}{'☆'.repeat(5 - Number(review.rating))}</span>
+                                <span className="review-author">{review.name || 'Ẩn danh'}</span>
                                 <small className="review-date">{review.created_at ? new Date(review.created_at).toLocaleDateString('vi-VN') : ''}</small>
                             </div>
+                            <span className="review-stars">{'★'.repeat(Number(review.rating))}{'☆'.repeat(5 - Number(review.rating))}</span>
                             <p className="review-comment">{review.comment}</p>
                         </article>
                     ))}

@@ -92,6 +92,9 @@
     background: #fff;
     overflow: hidden;
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+    position: sticky;
+    top: 0px;
+    z-index: 100;
 }
 
 .shop-top-strip {
@@ -395,6 +398,15 @@
     gap: 16px;
     margin-top: 12px;
     flex-wrap: wrap;
+    position: sticky;
+    top: 0px;
+    z-index: 100;
+    background: rgba(253, 248, 240, 0.96);
+    backdrop-filter: blur(8px);
+    border-radius: 16px;
+    padding: 10px 16px;
+    border: 1px solid var(--gold-border);
+    box-shadow: 0 4px 18px rgba(180, 130, 40, 0.1);
 }
 
 .portal-header-brand {
@@ -800,7 +812,7 @@
 
 .card-list {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 12px;
 }
 
@@ -836,7 +848,7 @@
 
 .product-desc {
     margin: 0;
-    color: #835f4e;
+    color: #3b1f10;
     font-size: 13px;
 }
 
@@ -924,6 +936,15 @@
     gap: 14px;
 }
 
+.shop-detail h2 {
+    color: #1a1008;
+    font-weight: 700;
+}
+
+.shop-detail p {
+    color: #2c1a0a;
+}
+
 .breadcrumb-panel p {
     margin: 0;
     color: #8b644f;
@@ -965,7 +986,7 @@
 }
 
 .rating-line small {
-    color: #8a6450;
+    color: #4a2c10;
 }
 
 .buy-actions {
@@ -1178,7 +1199,8 @@
     border-radius: 10px;
     padding: 10px 12px;
     font-size: 14px;
-    color: #ffffff;
+    background: #fff;
+    color: #1a1008;
     resize: vertical;
     outline: none;
     font-family: inherit;
@@ -1242,6 +1264,12 @@
 .review-date {
     color: var(--app-muted);
     font-size: 12px;
+}
+
+.review-author {
+    font-size: 13px;
+    font-weight: 600;
+    color: #3d2a0a;
 }
 
 .review-comment {
