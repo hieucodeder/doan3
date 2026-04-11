@@ -177,7 +177,7 @@ export default function OrdersPage() {
                             ) : rows.map((order) => (
                                 <tr key={order.id || order.order_id}>
                                     <td>{order.id || order.order_id}</td>
-                                    <td>{order.user_id}</td>
+                                    <td>{order.user_name || order.user_id}</td>
                                     <td>{formatPrice(Number(order.total_price || 0))}</td>
                                     <td>{order.address}</td>
                                     <td>{order.phone}</td>

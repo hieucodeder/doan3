@@ -34,14 +34,14 @@ export default function CartPage({ cartItems = [], productsData = [], onGoChecko
                                 <div>
                                     <h3>{row.product_name}</h3>
                                     <p>{row.brand}</p>
-                                    <small>Gia: {row.price}</small>
+                                    <small>Giá: {row.price}</small>
                                 </div>
                                 <div className="cart-qty" onClick={(e) => e.stopPropagation()}>
                                     <button type="button" onClick={() => onUpdateCartQty && onUpdateCartQty(row.product_id, row.quantity - 1)}>-</button>
                                     <span>{row.quantity}</span>
                                     <button type="button" onClick={() => onUpdateCartQty && onUpdateCartQty(row.product_id, row.quantity + 1)}>+</button>
                                 </div>
-                                <strong>{row.total}</strong>
+                                <strong style={{ fontSize: 15, color: '#9a4324', whiteSpace: 'nowrap', paddingRight: 32 }}>{row.total}</strong>
                                 <button
                                     type="button"
                                     className="cart-remove-btn"
@@ -62,13 +62,9 @@ export default function CartPage({ cartItems = [], productsData = [], onGoChecko
                     <span>Tổng tiền hàng </span>
                     <strong>{formatPrice(grandTotal)}</strong>
                 </div>
-                <div className="summary-line">
-                    <span>Phí ship</span>
-                    <strong>{formatPrice(30000)}</strong>
-                </div>
                 <div className="summary-line total">
                     <span>Thanh toán</span>
-                    <strong>{formatPrice(grandTotal + 30000)}</strong>
+                    <strong>{formatPrice(grandTotal)}</strong>
                 </div>
                 <button type="button" className="btn-primary" onClick={onGoCheckout}>
                     Tiến hành thanh toán

@@ -13,8 +13,7 @@ export default function CheckoutPage({ cartItems = [], productsData = [], userId
         const product = productsData.find((p) => p.id === item.product_id)
         return sum + (product?.price || 0) * item.quantity
     }, 0)
-    const shippingFee = cartItems.length > 0 ? 30000 : 0
-    const total = subtotal + shippingFee
+    const total = subtotal
 
     const handleCheckout = async () => {
         if (!phone || !address) {
@@ -86,7 +85,6 @@ export default function CheckoutPage({ cartItems = [], productsData = [], userId
             <aside className="checkout-summary">
                 <h3>Tổng quan đơn hàng</h3>
                 <p>{cartItems.length} sản phẩm</p>
-                <p>Phí vận chuyển: {formatPrice(shippingFee)}</p>
                 <strong>Tổng thanh toán: {formatPrice(total)}</strong>
                 <button
                     type="button"

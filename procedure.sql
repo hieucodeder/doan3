@@ -456,11 +456,26 @@ BEGIN
 END //
 DELIMITER ;
 -- lay ORDERS
+CALL sp_get_orders
+
 DELIMITER //
+
 CREATE PROCEDURE sp_get_orders()
 BEGIN
-    SELECT * FROM orders;
+    SELECT 
+        o.id,
+        o.total_price,
+        o.status,
+        o.address,
+        o.phone,
+        o.created_at,
+        u.name AS user_name,
+        u.email
+    FROM orders o
+    JOIN users u ON o.user_id = u.id
+    ORDER BY o.created_at DESC;
 END //
+
 DELIMITER ;
 -- update state
 
@@ -507,7 +522,7 @@ BEGIN
 END //
 
 DELIMITER ;
-DROP PROCEDURE sp_update_order_status;
+DROP PROCEDURE sp_get_orders;
 CALL sp_checkout_order(4, 'Hà Nội', '0987');
 CALL sp_checkout_order(4, 'Hà Nội', '0987...');
 CALL sp_update_order_status(15, 'shipping');
