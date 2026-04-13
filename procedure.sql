@@ -175,8 +175,7 @@ END //
 
 DELIMITER ;
 CALL sp_delete_category(18);
--- 3
-// add product
+-- 3 add 
 DELIMITER //
 
 CREATE PROCEDURE sp_create_product(
@@ -185,24 +184,34 @@ CREATE PROCEDURE sp_create_product(
     IN p_price DECIMAL(10,2),
     IN p_stock INT,
     IN p_description TEXT,
-    IN p_image_url TEXT,
     IN p_category_id INT
 )
 BEGIN
-    INSERT INTO products(name, brand, price, stock, description, image_url, category_id)
-    VALUES(p_name, p_brand, p_price, p_stock, p_description, p_image_url, p_category_id);
+    INSERT INTO products(name, brand, price, stock, description, category_id)
+    VALUES(p_name, p_brand, p_price, p_stock, p_description, p_category_id);
+
+    SELECT LAST_INSERT_ID() AS product_id;
+
 END //
 
 DELIMITER ;
-CALL sp_create_product(
-    'Dior Sauvage',
-    'Dior',
-    2500000,
-    1900,
-    'Hương nam tính mạnh mẽ',
-    'https://images.pexels.com/photos/17945898/pexels-photo-17945898.jpeg',
-    13
-);
+-- add ảnh vào bảng image
+DELIMITER //
+
+CREATE PROCEDURE sp_add_product_image(
+    IN p_product_id INT,
+    IN p_image_url TEXT
+)
+BEGIN
+    INSERT INTO product_images(product_id, image_url)
+    VALUES(p_product_id, p_image_url);
+END //
+
+DELIMITER 
+DELETE FROM product_images WHERE product_id = p_id;
+
+-- insert lại toàn bộ ảnh mới
+DROP PROCEDURE IF EXISTS sp_create_product; 
 SHOW PROCEDURE STATUS WHERE Name = 'sp_create_product';
 -- PUT product
 DELIMITER //
@@ -214,7 +223,6 @@ CREATE PROCEDURE sp_update_product_full(
     IN p_price DECIMAL(10,2),
     IN p_stock INT,
     IN p_description TEXT,
-    IN p_image_url TEXT,
     IN p_category_id INT
 )
 BEGIN
@@ -225,20 +233,11 @@ BEGIN
         price = p_price,
         stock = p_stock,
         description = p_description,
-        image_url = p_image_url,
         category_id = p_category_id
     WHERE id = p_id;
 END //
-CALL sp_update_product_full(
-    28,
-    'Dior Sauvage Updated',
-    'Dior',
-    2600000,
-    20,
-    'Hương nam tính mạnh mẽ hơn',
-    'https://images.pexels.com/photos/17945898/pexels-photo-17945898.jpeg',
-    12
-);
+
+DELIMITER ;
 -- delete product khi chưa có đơn hàng nào có sản phẩm đó
 DELIMITER //
 
@@ -248,15 +247,19 @@ CREATE PROCEDURE sp_delete_product(
 BEGIN
     DECLARE v_count INT;
 
-    -- kiểm tra sản phẩm đã có trong order chưa
+    -- kiểm tra đã có trong order chưa
     SELECT COUNT(*) INTO v_count
     FROM order_items
     WHERE product_id = p_id;
 
     IF v_count > 0 THEN
         SELECT 'PRODUCT_IN_ORDER' AS message;
+
     ELSE
-        -- xoá trong cart trước
+        -- ❗ xoá ảnh trước (QUAN TRỌNG)
+        DELETE FROM product_images WHERE product_id = p_id;
+
+        -- xoá cart
         DELETE FROM cart_items WHERE product_id = p_id;
 
         -- xoá review
@@ -273,27 +276,65 @@ END //
 DELIMITER ;
 CALL sp_delete_product(28);
 DELIMITER ;
+
 -- LAY PRODUCT
- DELIMITER //
+DELIMITER //
+
 CREATE PROCEDURE sp_get_products()
 BEGIN
-    SELECT p.*, c.name as category_name
+    SELECT 
+        p.id,
+        p.name,
+        p.brand,
+        p.price,
+        p.stock,
+        p.description,
+        c.name AS category_name,
+
+        -- lấy 1 ảnh đại diện
+        (SELECT pi.image_url 
+         FROM product_images pi 
+         WHERE pi.product_id = p.id 
+         LIMIT 1) AS thumbnail
+
     FROM products p
     JOIN categories c ON p.category_id = c.id;
 END //
+
 DELIMITER ;
 CALL sp_get_products();
 -- get product id
+DROP PROCEDURE IF EXISTS sp_get_product_by_id; 
 DELIMITER //
+
 CREATE PROCEDURE sp_get_product_by_id(IN p_id INT)
 BEGIN
-    SELECT p.*, c.name AS category_name
+    SELECT
+        p.id,
+        p.name,
+        p.brand,
+        p.price,
+        p.stock,
+        p.description,
+        c.name AS category_name,
+
+        COALESCE(
+            (
+                SELECT JSON_ARRAYAGG(pi.image_url)
+                FROM product_images pi
+                WHERE pi.product_id = p.id
+            ),
+            JSON_ARRAY()
+        ) AS images
+
     FROM products p
     JOIN categories c ON p.category_id = c.id
-    WHERE p.id = p_id;
+    WHERE p.id = p_id
+    LIMIT 1;
 END //
+
 DELIMITER ;
-CALL sp_get_product_by_id(1);
+CALL sp_get_product_by_id(21);
 
 -- UPDATE PRODUCT
 DELIMITER //
@@ -354,7 +395,7 @@ BEGIN
     VALUES(v_cart_id, p_product_id, p_quantity);
 END //
 DELIMITER ;
-DROP PROCEDURE IF EXISTS  sp_add_to_cart; 
+DROP PROCEDURE IF EXISTS sp_get_product_by_id; 
 CALL sp_add_to_cart(3, 2, 2); 
 -- 1: cart_id
 -- 5: product_id

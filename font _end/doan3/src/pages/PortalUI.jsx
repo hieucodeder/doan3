@@ -33,6 +33,29 @@ const adminTabs = [
     { key: 'categories', label: 'Danh mục' },
 ]
 
+const normalizeProductForUI = (product) => {
+    const firstGalleryImage = Array.isArray(product.images) ? product.images[0] : ''
+    const resolvedImage = resolveImageUrl(product.thumbnail || firstGalleryImage || product.image_url || product.image || '')
+
+    return {
+        ...product,
+        thumbnail: resolvedImage,
+        image_url: resolvedImage,
+        price: Number(product.price || 0),
+        category_id: Number(product.category_id || 0),
+    }
+}
+
+const buildProductImageMap = (products) => {
+    const map = {}
+        ; (products || []).forEach((product) => {
+            const firstGalleryImage = Array.isArray(product.images) ? product.images[0] : ''
+            const resolvedImage = resolveImageUrl(product.thumbnail || firstGalleryImage || product.image_url || product.image || '')
+            map[String(product.id)] = resolvedImage
+        })
+    return map
+}
+
 function CustomerPages({
     activeTab,
     selectedProductId,
@@ -70,6 +93,7 @@ function CustomerPages({
                 userId={userId}
                 onAddToCart={onAddToCart}
                 onBuyNow={onBuyNow}
+                onOpenProduct={onOpenProduct}
             />
         )
     }
@@ -99,6 +123,7 @@ export default function PortalUI({ role = 'user', userName = 'Khach hang', onLog
     const [selectedCatalogLabel, setSelectedCatalogLabel] = useState('Nuoc hoa')
     const [categoryMenu, setCategoryMenu] = useState([])
     const [productsData, setProductsData] = useState([])
+    const [productImageMap, setProductImageMap] = useState({})
 
     const mode = role === 'admin' ? 'admin' : 'customer'
     const tabs = useMemo(() => (mode === 'customer' ? customerTabs : adminTabs), [mode])
@@ -132,13 +157,9 @@ export default function PortalUI({ role = 'user', userName = 'Khach hang', onLog
             const { ok, payload } = await apiRequest('/api/products')
             if (!isMounted) return
 
-            if (ok && payload?.success && Array.isArray(payload.data) && payload.data.length > 0) {
-                const normalized = payload.data.map((product) => ({
-                    ...product,
-                    image_url: resolveImageUrl(product.image_url || product.image || ''),
-                    price: Number(product.price || 0),
-                    category_id: Number(product.category_id || 0),
-                }))
+            if (ok && payload?.success && Array.isArray(payload.data)) {
+                setProductImageMap(buildProductImageMap(payload.data))
+                const normalized = payload.data.map(normalizeProductForUI)
                 setProductsData(normalized)
             }
         }
@@ -212,17 +233,27 @@ export default function PortalUI({ role = 'user', userName = 'Khach hang', onLog
         const categoryId = selectedCatalog.startsWith('category-')
             ? Number(selectedCatalog.replace('category-', ''))
             : 0
-        const params = new URLSearchParams()
-        if (keyword) params.set('keyword', keyword)
-        params.set('category_id', categoryId)
-        const { ok, payload } = await apiRequest(`/api/products/search?${params.toString()}`)
+        const trimmedKeyword = String(keyword || '').trim()
+        const requestPath = (() => {
+            if (!trimmedKeyword && categoryId === 0) return '/api/products'
+            const params = new URLSearchParams()
+            if (trimmedKeyword) params.set('keyword', trimmedKeyword)
+            params.set('category_id', categoryId)
+            return `/api/products/search?${params.toString()}`
+        })()
+
+        const { ok, payload } = await apiRequest(requestPath)
         if (ok && payload?.success && Array.isArray(payload.data)) {
-            const normalized = payload.data.map((product) => ({
-                ...product,
-                image_url: resolveImageUrl(product.image_url || product.image || ''),
-                price: Number(product.price || 0),
-                category_id: Number(product.category_id || 0),
-            }))
+            const normalized = payload.data.map((product) => {
+                const normalizedProduct = normalizeProductForUI(product)
+                const canonicalImage = productImageMap[String(product.id)]
+                if (!canonicalImage) return normalizedProduct
+                return {
+                    ...normalizedProduct,
+                    thumbnail: canonicalImage,
+                    image_url: canonicalImage,
+                }
+            })
             setProductsData(normalized)
         }
     }

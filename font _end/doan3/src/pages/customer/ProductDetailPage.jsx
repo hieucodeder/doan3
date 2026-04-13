@@ -9,9 +9,11 @@ export default function ProductDetailPage({
     userId,
     onAddToCart,
     onBuyNow,
+    onOpenProduct,
 }) {
     const fallbackProduct = productsData.find((item) => item.id === productId) || productsData[0]
     const [product, setProduct] = useState(fallbackProduct)
+    const [selectedImage, setSelectedImage] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState('')
     const [quantity, setQuantity] = useState(1)
@@ -33,13 +35,22 @@ export default function ProductDetailPage({
             if (!isMounted) return
             if (ok && payload?.success && payload?.data) {
                 const apiProduct = payload.data
+                const fallbackImage = resolveImageUrl(apiProduct.image_url || apiProduct.image || '')
+                const normalizedImages = Array.isArray(apiProduct.images)
+                    ? apiProduct.images.map((img) => resolveImageUrl(img)).filter(Boolean)
+                    : []
+                const productImages = normalizedImages.length > 0
+                    ? normalizedImages
+                    : (fallbackImage ? [fallbackImage] : [])
                 setProduct({
                     ...apiProduct,
                     id: Number(apiProduct.id || productId),
                     price: Number(apiProduct.price || 0),
                     stock: Number(apiProduct.stock || 0),
                     category_id: Number(apiProduct.category_id || 0),
-                    image_url: resolveImageUrl(apiProduct.image_url || apiProduct.image || ''),
+                    category_name: apiProduct.category_name || '',
+                    images: productImages,
+                    image_url: productImages[0] || '',
                 })
             } else {
                 setError(payload?.message || 'Khong tai duoc chi tiet san pham')
@@ -51,6 +62,13 @@ export default function ProductDetailPage({
         fetchProductDetail()
         return () => { isMounted = false }
     }, [productId])
+
+    useEffect(() => {
+        const firstImage = Array.isArray(product?.images) && product.images.length > 0
+            ? product.images[0]
+            : (product?.image_url || '')
+        setSelectedImage(firstImage)
+    }, [productId, product?.image_url])
 
     const fetchReviews = async (pid) => {
         if (!pid) return
@@ -95,7 +113,10 @@ export default function ProductDetailPage({
 
     if (!product) return null
 
-    const categoryName = categoriesData.find((item) => item.id === product.category_id)?.name || 'Khac'
+    const categoryName = product.category_name || categoriesData.find((item) => item.id === product.category_id)?.name || 'Khac'
+    const relatedProducts = productsData
+        .filter((p) => p.id !== product.id && Number(p.category_id) === Number(product.category_id))
+        .slice(0, 4)
     const avgRating = reviews.length
         ? (reviews.reduce((sum, r) => sum + Number(r.rating), 0) / reviews.length).toFixed(1)
         : '0.0'
@@ -130,7 +151,24 @@ export default function ProductDetailPage({
 
             <div className="detail-layout">
                 <section className="panel product-visual">
-                    <img src={product.image_url} alt={product.name} className="product-main-photo" />
+                    <div className="product-gallery-main">
+                        <img src={selectedImage || product.image_url} alt={product.name} className="product-main-photo" />
+                    </div>
+                    {Array.isArray(product.images) && product.images.length > 1 ? (
+                        <div className="product-gallery-extra">
+                            <div className="thumb-row">
+                                {product.images.slice(1).map((img, idx) => (
+                                    <img
+                                        key={`${img}-${idx}`}
+                                        src={img}
+                                        alt={`${product.name} ${idx + 2}`}
+                                        onClick={() => setSelectedImage(img)}
+                                        className={(selectedImage || product.image_url) === img ? 'thumb-item active' : 'thumb-item'}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    ) : null}
                 </section>
 
                 <section className="panel product-buy-box">
@@ -213,6 +251,48 @@ export default function ProductDetailPage({
                 </section>
             </div>
 
+            {relatedProducts.length > 0 && (
+                <section className="panel full">
+                    <div className="panel-head">
+                        <h2>Sản phẩm gợi ý</h2>
+                        <p>Cùng danh mục {categoryName}</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                        {relatedProducts.map((p) => (
+                            <div
+                                key={p.id}
+                                onClick={() => onOpenProduct && onOpenProduct(p.id)}
+                                style={{
+                                    width: 160,
+                                    cursor: 'pointer',
+                                    border: '1px solid #e6cfbf',
+                                    borderRadius: 12,
+                                    overflow: 'hidden',
+                                    background: '#fff',
+                                    transition: 'box-shadow 0.2s',
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 4px 16px #c8a96e33'}
+                                onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
+                            >
+                                <img
+                                    src={resolveImageUrl(p.image_url || p.image || '')}
+                                    alt={p.name}
+                                    style={{ width: '100%', height: 140, objectFit: 'cover', display: 'block' }}
+                                />
+                                <div style={{ padding: '8px 10px' }}>
+                                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#3b2a1a', lineHeight: 1.3 }}>
+                                        {p.name}
+                                    </p>
+                                    <p style={{ margin: '4px 0 0', fontSize: 13, color: '#b8860b', fontWeight: 700 }}>
+                                        {formatPrice(Number(p.price || 0))}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+
             <section className="panel shipping-notes">
                 <article>
                     <strong>Giao nhanh</strong>
@@ -278,6 +358,7 @@ export default function ProductDetailPage({
                     ))}
                 </div>
             </section>
+
         </div>
     )
 }

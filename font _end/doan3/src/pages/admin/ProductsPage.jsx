@@ -9,13 +9,14 @@ export default function ProductsPage() {
     const [editingId, setEditingId] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
     const [message, setMessage] = useState('')
+    const [imageInput, setImageInput] = useState('')
     const [form, setForm] = useState({
         name: '',
         brand: '',
         price: '',
         stock: '',
         description: '',
-        image_url: '',
+        images: [],
         category_id: '',
     })
 
@@ -55,13 +56,14 @@ export default function ProductsPage() {
 
     const resetForm = () => {
         setEditingId(null)
+        setImageInput('')
         setForm({
             name: '',
             brand: '',
             price: '',
             stock: '',
             description: '',
-            image_url: '',
+            images: [],
             category_id: categories[0]?.id ? String(categories[0].id) : '',
         })
     }
@@ -69,18 +71,27 @@ export default function ProductsPage() {
     const handleSubmit = async () => {
         if (!form.name.trim()) return
 
-        const payload = {
-            name: form.name,
-            brand: form.brand,
+        const endpoint = editingId ? `/api/products/${editingId}` : '/api/products'
+        const method = editingId ? 'PUT' : 'POST'
+
+        const updatePayload = {
+            name: form.name.trim(),
+            brand: form.brand.trim(),
             price: Number(form.price || 0),
             stock: Number(form.stock || 0),
             description: form.description,
-            image_url: form.image_url,
-            category_id: Number(form.category_id),
+            category_id: form.category_id ? Number(form.category_id) : null,
         }
 
-        const endpoint = editingId ? `/api/products/${editingId}` : '/api/products'
-        const method = editingId ? 'PUT' : 'POST'
+        const normalizedImages = [...new Set((form.images || []).map((img) => String(img || '').trim()).filter(Boolean))]
+        const primaryImage = normalizedImages[0] || ''
+        const payload = editingId
+            ? updatePayload
+            : {
+                ...updatePayload,
+                image_url: primaryImage,
+                images: normalizedImages,
+            }
 
         const { ok, payload: responsePayload } = await apiRequest(endpoint, {
             method,
@@ -110,14 +121,15 @@ export default function ProductsPage() {
 
         const data = payload.data
         setEditingId(id)
+        setImageInput('')
         setForm({
             name: data.name || '',
             brand: data.brand || '',
             price: data.price ?? '',
             stock: data.stock ?? '',
             description: data.description || '',
-            image_url: data.image_url || data.image || '',
-            category_id: String(data.category_id || ''),
+            images: [data.image_url || data.image].filter(Boolean),
+            category_id: data.category_id ? String(data.category_id) : '',
         })
     }
 
@@ -134,14 +146,31 @@ export default function ProductsPage() {
         setMessage(payload?.message || 'Không thể xoá sản phẩm.')
     }
 
-    const handleFileChange = (e) => {
-        const file = e.target.files?.[0]
-        if (!file) return
-        const reader = new FileReader()
-        reader.onload = () => {
-            setForm((prev) => ({ ...prev, image_url: String(reader.result || '') }))
-        }
-        reader.readAsDataURL(file)
+    const handleAddImageUrl = () => {
+        if (!imageInput.trim()) return
+        setForm((prev) => ({ ...prev, images: [...prev.images, imageInput.trim()] }))
+        setImageInput('')
+    }
+
+    const handleRemoveImage = (idx) => {
+        setForm((prev) => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }))
+    }
+
+    const handleFileChange = async (e) => {
+        const files = Array.from(e.target.files || [])
+        if (files.length === 0) return
+        const results = await Promise.all(
+            files.map(
+                (file) =>
+                    new Promise((resolve) => {
+                        const reader = new FileReader()
+                        reader.onload = () => resolve(String(reader.result || ''))
+                        reader.readAsDataURL(file)
+                    })
+            )
+        )
+        setForm((prev) => ({ ...prev, images: [...prev.images, ...results] }))
+        e.target.value = ''
     }
 
     const brandOptions = useMemo(() => [
@@ -244,23 +273,46 @@ export default function ProductsPage() {
                         />
                     </label>
                     <label className="field full-row">
-                        <span>URL ảnh</span>
-                        <input
-                            type="text"
-                            value={form.image_url}
-                            onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-                            placeholder="https://..."
-                            style={{ background: '#fff', color: '#000' }}
-                        />
-                    </label>
-                    <label className="field full-row">
-                        <span>Upload ảnh hoa</span>
-                        <input type="file" accept="image/*" onChange={handleFileChange} />
+                        <span>Ảnh sản phẩm</span>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                            <input
+                                type="text"
+                                value={imageInput}
+                                onChange={(e) => setImageInput(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddImageUrl()}
+                                placeholder="https://..."
+                                style={{ background: '#fff', color: '#000', flex: 1 }}
+                            />
+                            <button type="button" className="ghost-btn" onClick={handleAddImageUrl}>Thêm</button>
+                        </div>
+                        <input type="file" accept="image/*" multiple onChange={handleFileChange} style={{ marginTop: 6 }} />
+                        {form.images.length > 0 && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
+                                {form.images.map((url, idx) => (
+                                    <div key={idx} style={{ position: 'relative' }}>
+                                        <img
+                                            src={url}
+                                            alt=""
+                                            style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 8, border: '1px solid #e6cfbf', display: 'block' }}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveImage(idx)}
+                                            style={{
+                                                position: 'absolute', top: -6, right: -6,
+                                                background: '#e57373', border: 'none', color: '#fff',
+                                                borderRadius: '50%', width: 18, height: 18,
+                                                fontSize: 11, cursor: 'pointer',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                lineHeight: 1,
+                                            }}
+                                        >✕</button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </label>
                 </div>
-                {form.image_url ? (
-                    <img src={form.image_url} alt="Preview" style={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 10, border: '1px solid #e6cfbf' }} />
-                ) : null}
                 <div className="admin-toolbar" style={{ marginTop: 12 }}>
                     <button type="button" className="btn-primary inline-action" onClick={handleSubmit}>
                         {editingId ? 'Cập nhật sản phẩm' : 'Thêm sản phẩm'}

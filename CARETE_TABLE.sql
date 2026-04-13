@@ -28,6 +28,13 @@ CREATE TABLE products (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES categories(id)
 );
+-- thêm bảng ảnh
+CREATE TABLE product_images (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT,
+    image_url TEXT,
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
 -- 4
  CREATE TABLE cart (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -85,3 +92,19 @@ CREATE TABLE order_history (
     note TEXT,                         -- Ghi chú (tùy chọn)
     FOREIGN KEY (order_id) REFERENCES orders(id)
 );
+
+-- xoá dữu liệu trong bảng
+SET FOREIGN_KEY_CHECKS = 0;
+
+TRUNCATE TABLE order_history;
+TRUNCATE TABLE reviews;
+TRUNCATE TABLE order_items;
+TRUNCATE TABLE orders;
+TRUNCATE TABLE cart_items;
+TRUNCATE TABLE cart;
+TRUNCATE TABLE product_images;
+TRUNCATE TABLE products;
+TRUNCATE TABLE categories;
+TRUNCATE TABLE users;
+
+SET FOREIGN_KEY_CHECKS = 1;
