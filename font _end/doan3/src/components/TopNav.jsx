@@ -150,11 +150,11 @@ export default function TopNav({
 
                         <div className="shop-account-tools">
                             <button type="button" className="user-pill">Xin chao {userName}</button>
-                            <button type="button" className="cart-pill" onClick={() => onChangeTab('cart')}>
+                            <button type="button" className={activeTab === 'cart' ? 'cart-pill active' : 'cart-pill'} onClick={() => onChangeTab('cart')}>
                                 Giỏ hàng
                                 <span className="cart-dot">{cartCount}</span>
                             </button>
-                            <button type="button" className="ghost-btn" onClick={() => onChangeTab('my-orders')}>
+                            <button type="button" className={activeTab === 'my-orders' ? 'ghost-btn active' : 'ghost-btn'} onClick={() => onChangeTab('my-orders')}>
                                 Đơn hàng của bạn
                             </button>
                             {onLogout ? (

@@ -25,20 +25,18 @@ const updateOrderStatus = async (id, status) => {
 };
 
 // Đặt hàng: tự tính tổng tiền, tạo order, thêm order_items và xóa giỏ hàng
-const checkoutOrder = async (user_id, address, phone) => {
+const checkoutOrder = async (user_id, address, phone, name) => {
     const [rows] = await db.query(
-        "CALL sp_checkout_order(?, ?, ?)",
-        [user_id, address, phone]
+        "CALL sp_checkout_order(?, ?, ?, ?)",
+        [user_id, address, phone, name]
     );
-    // SP trả về { message: 'ORDER_SUCCESS', order_id } hoặc { message: 'CART_EMPTY' }
     return rows[0][0] || null;
 };
-
-// Lấy lịch sử đặt hàng của user
-const getOrderHistoryByUser = async (user_id) => {
+// Lấy chi tiết sản phẩm trong đơn hàng theo order_id
+const getOrderHistoryByUser = async (order_id) => {
     const [rows] = await db.query(
         "CALL sp_get_order_history_by_user(?)",
-        [user_id]
+        [order_id]
     );
     return rows[0];
 };

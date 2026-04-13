@@ -103,7 +103,7 @@ export default function OrdersPage() {
                         </div>
 
                         <div style={{ marginBottom: 12, fontSize: 14, color: '#5a3e1e', display: 'grid', gap: 4 }}>
-                            <p style={{ margin: 0 }}>👤 Khách hàng #{detailOrder.user_id}</p>
+                            <p style={{ margin: 0 }}>👤 {detailOrder.customer_name || detailOrder.name || `Khách hàng #${detailOrder.user_id}`}</p>
                             <p style={{ margin: 0 }}>📍 {detailOrder.address}</p>
                             <p style={{ margin: 0 }}>📞 {detailOrder.phone}</p>
                             <div style={{ margin: '4px 0' }}>
@@ -177,7 +177,7 @@ export default function OrdersPage() {
                             ) : rows.map((order) => (
                                 <tr key={order.id || order.order_id}>
                                     <td>{order.id || order.order_id}</td>
-                                    <td>{order.user_name || order.user_id}</td>
+                                    <td>{order.customer_name || order.name || order.user_id}</td>
                                     <td>{formatPrice(Number(order.total_price || 0))}</td>
                                     <td>{order.address}</td>
                                     <td>{order.phone}</td>

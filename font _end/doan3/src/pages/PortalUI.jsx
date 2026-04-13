@@ -29,7 +29,7 @@ const adminTabs = [
     { key: 'dashboard', label: 'Dashboard' },
     { key: 'products', label: 'Sản phẩm' },
     { key: 'orders', label: 'Đơn hàng' },
-    { key: 'users', label: 'Khách hàng' },
+    { key: 'users', label: 'Người dùng' },
     { key: 'categories', label: 'Danh mục' },
 ]
 

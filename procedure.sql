@@ -52,7 +52,7 @@ BEGIN
     LIMIT 1;
 END //
 DELIMITER ;
-DROP PROCEDURE sp_get_user_by_email;
+DROP PROCEDURE sp_get_orders_by_user_with_status;
 -- thủ tục mới login
 DELIMITER //
 
@@ -228,12 +228,12 @@ CREATE PROCEDURE sp_update_product_full(
 BEGIN
     UPDATE products
     SET 
-        name = p_name,
-        brand = p_brand,
-        price = p_price,
-        stock = p_stock,
-        description = p_description,
-        category_id = p_category_id
+        name        = COALESCE(p_name,        name),
+        brand       = COALESCE(p_brand,       brand),
+        price       = COALESCE(p_price,       price),
+        stock       = COALESCE(p_stock,       stock),
+        description = COALESCE(p_description, description),
+        category_id = COALESCE(p_category_id, category_id)
     WHERE id = p_id;
 END //
 
@@ -304,7 +304,7 @@ END //
 DELIMITER ;
 CALL sp_get_products();
 -- get product id
-DROP PROCEDURE IF EXISTS sp_get_product_by_id; 
+DROP PROCEDURE IF EXISTS sp_update_product_full; 
 DELIMITER //
 
 CREATE PROCEDURE sp_get_product_by_id(IN p_id INT)
@@ -505,6 +505,7 @@ CREATE PROCEDURE sp_get_orders()
 BEGIN
     SELECT 
         o.id,
+        o.name AS customer_name,
         o.total_price,
         o.status,
         o.address,
@@ -567,7 +568,7 @@ DROP PROCEDURE sp_get_orders;
 CALL sp_checkout_order(4, 'Hà Nội', '0987');
 CALL sp_checkout_order(4, 'Hà Nội', '0987...');
 CALL sp_update_order_status(15, 'shipping');
-CALL sp_get_order_history_by_user(4);
+CALL sp_get_order_history_by_user(2);
 
 -- thanh toan
 -- DELIMITER //
@@ -714,7 +715,8 @@ DELIMITER //
 CREATE PROCEDURE sp_checkout_order(
     IN p_user_id INT,
     IN p_address TEXT,
-    IN p_phone VARCHAR(20)
+    IN p_phone VARCHAR(20),
+	IN p_name VARCHAR(255)      
 )
 BEGIN
     DECLARE v_cart_id INT;
@@ -767,8 +769,8 @@ BEGIN
             WHERE c.user_id = p_user_id;
 
             -- tạo order
-            INSERT INTO orders(user_id, total_price, status, address, phone)
-            VALUES(p_user_id, v_total, 'pending', p_address, p_phone);
+			INSERT INTO orders(user_id, total_price, status, address, phone, name)
+			VALUES(p_user_id, v_total, 'pending', p_address, p_phone, p_name);
 
             SET @v_order_id = LAST_INSERT_ID();
 
@@ -919,25 +921,29 @@ DELIMITER ;
 DELIMITER //
 
 CREATE PROCEDURE sp_get_order_history_by_user(
-    IN p_user_id INT
+    IN p_order_id INT
 )
 BEGIN
     SELECT 
-        o.id AS order_id,
-        o.total_price,
-        o.address,
-        o.phone,
-        oh.status,
-        oh.updated_at,
-        oh.note
-    FROM order_history oh
-    JOIN orders o ON oh.order_id = o.id
-    WHERE o.user_id = p_user_id
-    ORDER BY o.id DESC, oh.updated_at ASC;
+        oi.product_id,
+        p.name AS product_name,
+        oi.price,
+        oi.quantity,
+        (oi.price * oi.quantity) AS subtotal,
+
+        -- lấy ảnh đầu tiên từ product_images thay vì products.image_url
+        (SELECT pi.image_url 
+         FROM product_images pi 
+         WHERE pi.product_id = p.id 
+         LIMIT 1) AS image_url
+
+    FROM order_items oi
+    JOIN products p ON oi.product_id = p.id
+    WHERE oi.order_id = p_order_id;
 END //
 
 DELIMITER ;
-CALL sp_get_order_history_by_user(4);
+CALL sp_get_order_history_by_user(2);
 DROP PROCEDURE sp_get_order_history_by_user;
 
 -- showw đơn hàng theo trạng thái
@@ -945,11 +951,12 @@ DELIMITER //
 
 CREATE PROCEDURE sp_get_orders_by_user_with_status(
     IN p_user_id INT,
-    IN p_status VARCHAR(50) -- truyền NULL = tất cả
+    IN p_status VARCHAR(50)
 )
 BEGIN
     SELECT 
         id AS order_id,
+        name,
         total_price,
         address,
         phone,
@@ -962,6 +969,7 @@ BEGIN
 END //
 
 DELIMITER ;
+
 CALL sp_get_orders_by_user_with_status(4, 'completed');
 -- oder history detail
 DELIMITER //

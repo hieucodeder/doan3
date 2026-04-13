@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { formatPrice } from '../../data/mockData'
 import { apiRequest } from '../../services/apiClient'
 
-export default function CheckoutPage({ cartItems = [], productsData = [], userId, onCheckoutSuccess }) {
+export default function CheckoutPage({ cartItems = [], productsData = [], userId, userName, onCheckoutSuccess }) {
+    const [name, setName] = useState(userName || '')
     const [phone, setPhone] = useState('')
     const [address, setAddress] = useState('')
     const [isLoading, setIsLoading] = useState(false)
@@ -16,8 +17,8 @@ export default function CheckoutPage({ cartItems = [], productsData = [], userId
     const total = subtotal
 
     const handleCheckout = async () => {
-        if (!phone || !address) {
-            setMessage('Vui lòng nhập địa chỉ và số điện thoại.')
+        if (!name || !phone || !address) {
+            setMessage('Vui lòng nhập đầy đủ tên, địa chỉ và số điện thoại.')
             return
         }
         setIsLoading(true)
@@ -25,7 +26,7 @@ export default function CheckoutPage({ cartItems = [], productsData = [], userId
         setIsSuccess(false)
         const { ok, payload } = await apiRequest('/api/orders/checkout', {
             method: 'POST',
-            body: JSON.stringify({ user_id: userId, address, phone }),
+            body: JSON.stringify({ user_id: userId, address, phone, name }),
         })
         setIsLoading(false)
         if (ok && payload?.success) {
@@ -49,8 +50,13 @@ export default function CheckoutPage({ cartItems = [], productsData = [], userId
                 </div>
                 <div className="form-grid two-col">
                     <label className="field">
-                        <span>User ID</span>
-                        <input type="text" value={userId || ''} readOnly />
+                        <span>Họ tên khách hàng</span>
+                        <input
+                            type="text"
+                            placeholder="Nguyễn Văn A"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                        />
                     </label>
                     <label className="field">
                         <span>Điện thoại</span>

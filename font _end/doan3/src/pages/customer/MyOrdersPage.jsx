@@ -77,7 +77,7 @@ export default function MyOrdersPage({ userId }) {
         setDetailOrder(order)
         setDetailItems([])
         setDetailLoading(true)
-        const { ok, payload } = await apiRequest(`/api/orders/${order.order_id}/detail`)
+        const { ok, payload } = await apiRequest(`/api/orders/history/${order.order_id}`)
         setDetailLoading(false)
         if (ok && payload?.success && Array.isArray(payload.data)) {
             setDetailItems(payload.data)
@@ -109,6 +109,7 @@ export default function MyOrdersPage({ userId }) {
                         </div>
 
                         <div style={{ marginBottom: 12, fontSize: 14, color: '#5a3e1e', display: 'grid', gap: 4 }}>
+                            {detailOrder.name && <p style={{ margin: 0 }}>👤 {detailOrder.name}</p>}
                             <p style={{ margin: 0 }}>📍 {detailOrder.address}</p>
                             <p style={{ margin: 0 }}>📞 {detailOrder.phone}</p>
                             <div style={{ margin: '4px 0' }}>
@@ -191,6 +192,7 @@ export default function MyOrdersPage({ userId }) {
                             <div className={`status-pill status-${order.status}`}>
                                 {STATUS_LABEL[order.status] || order.status}
                             </div>
+                            {order.name && <p>Khách hàng: {order.name}</p>}
                             <p>SĐT nhận hàng: {order.phone}</p>
                             <p>{order.address}</p>
                             {order.note && <p>Ghi chú: {order.note}</p>}

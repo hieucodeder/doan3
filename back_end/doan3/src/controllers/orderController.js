@@ -45,14 +45,14 @@ const updateOrderStatus = async (req, res) => {
 
 // POST /api/orders/checkout - Đặt hàng từ giỏ hàng
 const checkoutOrder = async (req, res) => {
-    const { user_id, address, phone } = req.body;
+    const { user_id, address, phone, name } = req.body;
 
-    if (!user_id || !address || !phone) {
-        return res.status(400).json({ success: false, message: "user_id, address, phone là bắt buộc" });
+    if (!user_id || !address || !phone || !name) {
+        return res.status(400).json({ success: false, message: "user_id, address, phone, name là bắt buộc" });
     }
 
     try {
-        const result = await orderService.checkoutOrder(user_id, address, phone);
+        const result = await orderService.checkoutOrder(user_id, address, phone, name);
 
         if (!result || result.message === "CART_EMPTY") {
             return res.status(400).json({ success: false, message: "Giỏ hàng trống" });
@@ -72,12 +72,15 @@ const checkoutOrder = async (req, res) => {
     }
 };
 
-// GET /api/orders/history/:userId - Lịch sử đặt hàng của user
+// GET /api/orders/history/:orderId - Chi tiết sản phẩm trong đơn hàng
 const getOrderHistoryByUser = async (req, res) => {
-    const { userId } = req.params;
+    const { orderId } = req.params;
 
     try {
-        const data = await orderService.getOrderHistoryByUser(userId);
+        const data = await orderService.getOrderHistoryByUser(orderId);
+        if (!data || data.length === 0) {
+            return res.status(404).json({ success: false, message: "Không tìm thấy đơn hàng" });
+        }
         res.json({ success: true, data });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });

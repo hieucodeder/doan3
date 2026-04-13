@@ -37,7 +37,7 @@ export default function ProductDetailPage({
                 const apiProduct = payload.data
                 const fallbackImage = resolveImageUrl(apiProduct.image_url || apiProduct.image || '')
                 const normalizedImages = Array.isArray(apiProduct.images)
-                    ? apiProduct.images.map((img) => resolveImageUrl(img)).filter(Boolean)
+                    ? [...new Set(apiProduct.images.map((img) => resolveImageUrl(img)).filter(Boolean))]
                     : []
                 const productImages = normalizedImages.length > 0
                     ? normalizedImages
@@ -157,13 +157,13 @@ export default function ProductDetailPage({
                     {Array.isArray(product.images) && product.images.length > 1 ? (
                         <div className="product-gallery-extra">
                             <div className="thumb-row">
-                                {product.images.slice(1).map((img, idx) => (
+                                {product.images.slice(0, 5).map((img, idx) => (
                                     <img
                                         key={`${img}-${idx}`}
                                         src={img}
-                                        alt={`${product.name} ${idx + 2}`}
+                                        alt={`${product.name} ${idx + 1}`}
                                         onClick={() => setSelectedImage(img)}
-                                        className={(selectedImage || product.image_url) === img ? 'thumb-item active' : 'thumb-item'}
+                                        className={selectedImage === img ? 'thumb-item active' : 'thumb-item'}
                                     />
                                 ))}
                             </div>

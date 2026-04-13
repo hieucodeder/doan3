@@ -123,8 +123,8 @@ export default function UsersPage() {
 
             <section className="panel">
                 <div className="panel-head">
-                    <h2>Quản lý khách hàng</h2>
-                    <p>Theo dõi danh sách khách hàng trong hệ thống</p>
+                    <h2>Quản lý người dùng</h2>
+                    <p>Theo dõi danh sách người dùng trong hệ thống</p>
                 </div>
 
                 {isLoading && <p className="admin-status-msg">Đang tải...</p>}
