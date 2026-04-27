@@ -93,6 +93,20 @@ CREATE TABLE order_history (
     note TEXT,                         -- Ghi chú (tùy chọn)
     FOREIGN KEY (order_id) REFERENCES orders(id)
 );
+-- 10. Header
+CREATE TABLE headers (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    site_name VARCHAR(255) NOT NULL,
+    logo_url TEXT,
+    hotline VARCHAR(50),
+    email VARCHAR(255),
+    address TEXT,
+    banner_text VARCHAR(255),
+    banner_image_url TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
 
 -- xoá dữu liệu trong bảng
 SET FOREIGN_KEY_CHECKS = 0;

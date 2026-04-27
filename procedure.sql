@@ -1048,3 +1048,598 @@ END //
 
 DELIMITER ;
 CALL sp_top_selling_products();
+-- 9 quản lý giới thiệu sản phẩm
+DROP PROCEDURE IF EXISTS sp_add_product_showcase;
+DELIMITER $$
+
+CREATE PROCEDURE sp_add_product_showcase (
+    IN p_product_id INT,
+    IN p_title VARCHAR(255),
+    IN p_short_description TEXT,
+    IN p_banner_image_url TEXT,
+    IN p_display_order INT,
+    IN p_is_active BOOLEAN,
+    IN p_created_by INT
+)
+BEGIN
+    INSERT INTO product_showcases (
+        product_id, title, short_description, banner_image_url,
+        display_order, is_active, created_by, updated_by
+    )
+    VALUES (
+        p_product_id, p_title, p_short_description, p_banner_image_url,
+        p_display_order, p_is_active, p_created_by, p_created_by
+    );
+
+    SELECT ps.*, p.name AS product_name, p.brand, p.price, p.image_url AS product_image_url
+    FROM product_showcases ps
+    INNER JOIN products p ON p.id = ps.product_id
+    WHERE ps.id = LAST_INSERT_ID();
+END $$
+
+DELIMITER ;
+DROP PROCEDURE IF EXISTS sp_update_product_showcase;
+DELIMITER $$
+
+CREATE PROCEDURE sp_update_product_showcase (
+    IN p_id INT,
+    IN p_product_id INT,
+    IN p_title VARCHAR(255),
+    IN p_short_description TEXT,
+    IN p_banner_image_url TEXT,
+    IN p_display_order INT,
+    IN p_is_active BOOLEAN,
+    IN p_updated_by INT
+)
+BEGIN
+    UPDATE product_showcases
+    SET
+        product_id = p_product_id,
+        title = p_title,
+        short_description = p_short_description,
+        banner_image_url = p_banner_image_url,
+        display_order = p_display_order,
+        is_active = p_is_active,
+        updated_by = p_updated_by,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = p_id;
+
+    IF ROW_COUNT() = 0 THEN
+        SELECT 'PRODUCT_SHOWCASE_NOT_FOUND' AS message;
+    ELSE
+        SELECT ps.*, p.name AS product_name, p.brand, p.price, p.image_url AS product_image_url
+        FROM product_showcases ps
+        INNER JOIN products p ON p.id = ps.product_id
+        WHERE ps.id = p_id;
+    END IF;
+END $$
+
+DELIMITER ;
+DROP PROCEDURE IF EXISTS sp_delete_product_showcase;
+DELIMITER $$
+
+CREATE PROCEDURE sp_delete_product_showcase (
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM product_showcases
+    WHERE id = p_id;
+
+    IF ROW_COUNT() = 0 THEN
+        SELECT 'PRODUCT_SHOWCASE_NOT_FOUND' AS message;
+    ELSE
+        SELECT 'DELETE_SUCCESS' AS message;
+    END IF;
+END $$
+
+DELIMITER ;
+DROP PROCEDURE IF EXISTS sp_get_all_product_showcases;
+DELIMITER $$
+
+CREATE PROCEDURE sp_get_all_product_showcases ()
+BEGIN
+    SELECT
+        ps.*,
+        p.name AS product_name,
+        p.brand,
+        p.price,
+        p.stock,
+        p.image_url AS product_image_url
+    FROM product_showcases ps
+    INNER JOIN products p ON p.id = ps.product_id
+    ORDER BY ps.display_order ASC, ps.created_at DESC;
+END $$
+
+DELIMITER ;
+DROP PROCEDURE IF EXISTS sp_get_product_showcase_by_id;
+DELIMITER $$
+
+CREATE PROCEDURE sp_get_product_showcase_by_id (
+    IN p_id INT
+)
+BEGIN
+    SELECT
+        ps.*,
+        p.name AS product_name,
+        p.brand,
+        p.price,
+        p.stock,
+        p.description AS product_description,
+        p.image_url AS product_image_url
+    FROM product_showcases ps
+    INNER JOIN products p ON p.id = ps.product_id
+    WHERE ps.id = p_id;
+END $$
+
+DELIMITER ;
+DROP PROCEDURE IF EXISTS sp_get_public_product_showcases;
+DELIMITER $$
+
+CREATE PROCEDURE sp_get_public_product_showcases ()
+BEGIN
+    SELECT
+        ps.id,
+        ps.product_id,
+        ps.title,
+        ps.short_description,
+        ps.banner_image_url,
+        ps.display_order,
+        p.name AS product_name,
+        p.brand,
+        p.price,
+        p.image_url AS product_image_url
+    FROM product_showcases ps
+    INNER JOIN products p ON p.id = ps.product_id
+    WHERE ps.is_active = TRUE
+    ORDER BY ps.display_order ASC, ps.created_at DESC;
+END $$
+
+DELIMITER ;
+-- 10 Thêm header
+DROP PROCEDURE IF EXISTS sp_add_header;
+DELIMITER $$
+
+CREATE PROCEDURE sp_add_header (
+    IN p_site_name VARCHAR(255),
+    IN p_logo_url TEXT,
+    IN p_hotline VARCHAR(50),
+    IN p_email VARCHAR(255),
+    IN p_address TEXT,
+    IN p_banner_text VARCHAR(255),
+    IN p_banner_image_url TEXT,
+    IN p_is_active BOOLEAN
+)
+BEGIN
+    IF p_is_active = TRUE THEN
+        UPDATE headers
+        SET is_active = FALSE,
+            updated_at = CURRENT_TIMESTAMP;
+    END IF;
+
+    INSERT INTO headers (
+        site_name, logo_url, hotline, email, address,
+        banner_text, banner_image_url, is_active
+    )
+    VALUES (
+        p_site_name, p_logo_url, p_hotline, p_email, p_address,
+        p_banner_text, p_banner_image_url, p_is_active
+    );
+
+    SELECT *
+    FROM headers
+    WHERE id = LAST_INSERT_ID();
+END $$
+
+DELIMITER ;
+-- Cập nhật header
+DROP PROCEDURE IF EXISTS sp_update_header;
+DELIMITER $$
+
+CREATE PROCEDURE sp_update_header (
+    IN p_id INT,
+    IN p_site_name VARCHAR(255),
+    IN p_logo_url TEXT,
+    IN p_hotline VARCHAR(50),
+    IN p_email VARCHAR(255),
+    IN p_address TEXT,
+    IN p_banner_text VARCHAR(255),
+    IN p_banner_image_url TEXT,
+    IN p_is_active BOOLEAN
+)
+BEGIN
+    IF p_is_active = TRUE THEN
+        UPDATE headers
+        SET is_active = FALSE,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id <> p_id;
+    END IF;
+
+    UPDATE headers
+    SET
+        site_name = p_site_name,
+        logo_url = p_logo_url,
+        hotline = p_hotline,
+        email = p_email,
+        address = p_address,
+        banner_text = p_banner_text,
+        banner_image_url = p_banner_image_url,
+        is_active = p_is_active,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = p_id;
+
+    IF ROW_COUNT() = 0 THEN
+        SELECT 'HEADER_NOT_FOUND' AS message;
+    ELSE
+        SELECT *
+        FROM headers
+        WHERE id = p_id;
+    END IF;
+END $$
+
+DELIMITER ;
+-- Xoá header
+DROP PROCEDURE IF EXISTS sp_delete_header;
+DELIMITER $$
+
+CREATE PROCEDURE sp_delete_header (
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM headers
+    WHERE id = p_id;
+
+    IF ROW_COUNT() = 0 THEN
+        SELECT 'HEADER_NOT_FOUND' AS message;
+    ELSE
+        SELECT 'DELETE_SUCCESS' AS message;
+    END IF;
+END $$
+
+DELIMITER ;
+-- Lấy tất cả header
+DROP PROCEDURE IF EXISTS sp_get_all_headers;
+DELIMITER $$
+
+CREATE PROCEDURE sp_get_all_headers ()
+BEGIN
+    SELECT * FROM headers
+    ORDER BY updated_at DESC;
+END $$
+
+DELIMITER ;
+-- Kích hoạt header
+DROP PROCEDURE IF EXISTS sp_activate_header;
+DELIMITER $$
+
+CREATE PROCEDURE sp_activate_header (
+    IN p_id INT
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM headers WHERE id = p_id) THEN
+        SELECT 'HEADER_NOT_FOUND' AS message;
+    ELSE
+    UPDATE headers
+    SET is_active = FALSE;
+
+    UPDATE headers
+    SET is_active = TRUE,
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = p_id;
+
+    SELECT *
+    FROM headers
+    WHERE id = p_id;
+    END IF;
+END $$
+
+DELIMITER ;
+-- 11 Thêm menu
+DROP PROCEDURE IF EXISTS sp_add_header_menu;
+DELIMITER $$
+
+CREATE PROCEDURE sp_add_header_menu (
+    IN p_header_id INT,
+    IN p_name VARCHAR(255),
+    IN p_link VARCHAR(255),
+    IN p_position INT,
+    IN p_parent_id INT,
+    IN p_is_active BOOLEAN
+)
+BEGIN
+    INSERT INTO header_menus (
+        header_id, name, link, position, parent_id, is_active
+    )
+    VALUES (
+        p_header_id, p_name, p_link, p_position, p_parent_id, p_is_active
+    );
+
+    SELECT *
+    FROM header_menus
+    WHERE id = LAST_INSERT_ID();
+END $$
+
+DELIMITER ;
+-- Cập nhật menu
+DROP PROCEDURE IF EXISTS sp_update_header_menu;
+DELIMITER $$
+
+CREATE PROCEDURE sp_update_header_menu (
+    IN p_id INT,
+    IN p_header_id INT,
+    IN p_name VARCHAR(255),
+    IN p_link VARCHAR(255),
+    IN p_position INT,
+    IN p_parent_id INT,
+    IN p_is_active BOOLEAN
+)
+BEGIN
+    UPDATE header_menus
+    SET
+        header_id = p_header_id,
+        name = p_name,
+        link = p_link,
+        position = p_position,
+        parent_id = p_parent_id,
+        is_active = p_is_active
+    WHERE id = p_id;
+
+    IF ROW_COUNT() = 0 THEN
+        SELECT 'HEADER_MENU_NOT_FOUND' AS message;
+    ELSE
+        SELECT *
+        FROM header_menus
+        WHERE id = p_id;
+    END IF;
+END $$
+
+DELIMITER ;
+-- Xoá Menu
+DROP PROCEDURE IF EXISTS sp_delete_header_menu;
+DELIMITER $$
+
+CREATE PROCEDURE sp_delete_header_menu (
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM header_menus
+    WHERE id = p_id;
+
+    IF ROW_COUNT() = 0 THEN
+        SELECT 'HEADER_MENU_NOT_FOUND' AS message;
+    ELSE
+        SELECT 'DELETE_SUCCESS' AS message;
+    END IF;
+END $$
+
+DELIMITER ;
+-- lấy menu theo header
+DROP PROCEDURE IF EXISTS sp_get_menus_by_header;
+DELIMITER $$
+
+CREATE PROCEDURE sp_get_menus_by_header (
+    IN p_header_id INT
+)
+BEGIN
+    SELECT *
+    FROM header_menus
+    WHERE header_id = p_header_id
+    ORDER BY position ASC, id ASC;
+END $$
+
+DELIMITER ;
+-- Đổi trạng thái menu
+DROP PROCEDURE IF EXISTS sp_toggle_header_menu_status;
+DELIMITER $$
+
+CREATE PROCEDURE sp_toggle_header_menu_status (
+    IN p_id INT,
+    IN p_is_active BOOLEAN
+)
+BEGIN
+    UPDATE header_menus
+    SET is_active = p_is_active
+    WHERE id = p_id;
+
+    IF ROW_COUNT() = 0 THEN
+        SELECT 'HEADER_MENU_NOT_FOUND' AS message;
+    ELSE
+        SELECT *
+        FROM header_menus
+        WHERE id = p_id;
+    END IF;
+END $$
+
+DELIMITER;
+-- Test product showcases
+CALL sp_add_product_showcase(
+    1,
+    'San pham gioi thieu test',
+    'Mo ta ngan cho san pham gioi thieu',
+    'https://example.com/banner-test.jpg',
+    1,
+    TRUE,
+    1
+);
+
+CALL sp_update_product_showcase(
+    1,
+    1,
+    'San pham gioi thieu test updated',
+    'Mo ta ngan da cap nhat',
+    'https://example.com/banner-test-updated.jpg',
+    2,
+    TRUE,
+    1
+);
+--
+CALL sp_get_all_headers();
+CALL sp_add_header(
+    'Doan3 Shop',
+    'https://example.com/logo.png',
+    '0909000000',
+    'shop@example.com',
+    '123 Le Loi, Q1',
+    'Chao mung den voi cua hang',
+    'https://example.com/banner.png',
+    TRUE
+);
+
+
+DROP PROCEDURE IF EXISTS sp_add_header;
+DELIMITER $$
+CREATE PROCEDURE sp_add_header(
+    IN p_site_name VARCHAR(255),
+    IN p_logo_url TEXT,
+    IN p_hotline VARCHAR(50),
+    IN p_email VARCHAR(255),
+    IN p_address TEXT,
+    IN p_banner_text VARCHAR(255),
+    IN p_banner_image_url TEXT,
+    IN p_is_active BOOLEAN
+)
+BEGIN
+    IF p_is_active = TRUE THEN
+        UPDATE headers SET is_active = FALSE WHERE id > 0;
+    END IF;
+
+    INSERT INTO headers (
+        site_name,
+        logo_url,
+        hotline,
+        email,
+        address,
+        banner_text,
+        banner_image_url,
+        is_active
+    )
+    VALUES (
+        p_site_name,
+        p_logo_url,
+        p_hotline,
+        p_email,
+        p_address,
+        p_banner_text,
+        p_banner_image_url,
+        COALESCE(p_is_active, TRUE)
+    );
+
+    SELECT * FROM headers WHERE id = LAST_INSERT_ID();
+END $$
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS sp_get_all_headers;
+DELIMITER $$ 
+CREATE PROCEDURE sp_get_all_headers()
+BEGIN
+    SELECT *
+    FROM headers
+    ORDER BY is_active DESC, id DESC;
+END $$
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS sp_get_header_by_id;
+DELIMITER $$
+CREATE PROCEDURE sp_get_header_by_id(
+    IN p_id INT
+)
+BEGIN
+    SELECT *
+    FROM headers
+    WHERE id = p_id
+    LIMIT 1;
+END $$
+DELIMITER ;
+--
+DROP PROCEDURE IF EXISTS sp_update_header;
+DELIMITER $$
+CREATE PROCEDURE sp_update_header(
+    IN p_id INT,
+    IN p_site_name VARCHAR(255),
+    IN p_logo_url TEXT,
+    IN p_hotline VARCHAR(50),
+    IN p_email VARCHAR(255),
+    IN p_address TEXT,
+    IN p_banner_text VARCHAR(255),
+    IN p_banner_image_url TEXT,
+    IN p_is_active BOOLEAN
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM headers WHERE id = p_id) THEN
+        SELECT 'HEADER_NOT_FOUND' AS message;
+    ELSE
+        IF p_is_active = TRUE THEN
+            UPDATE headers
+            SET is_active = FALSE
+            WHERE id <> p_id;
+        END IF;
+
+        UPDATE headers
+        SET
+            site_name = p_site_name,
+            logo_url = p_logo_url,
+            hotline = p_hotline,
+            email = p_email,
+            address = p_address,
+            banner_text = p_banner_text,
+            banner_image_url = p_banner_image_url,
+            is_active = COALESCE(p_is_active, is_active)
+        WHERE id = p_id;
+
+        SELECT *
+        FROM headers
+        WHERE id = p_id
+        LIMIT 1;
+    END IF;
+END $$
+DELIMITER ;
+DROP PROCEDURE IF EXISTS sp_delete_header;
+-- 
+DELIMITER $$
+CREATE PROCEDURE sp_delete_header(
+    IN p_id INT
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM headers WHERE id = p_id) THEN
+        SELECT 'HEADER_NOT_FOUND' AS message;
+    ELSE
+        DELETE FROM headers
+        WHERE id = p_id;
+
+        SELECT 'HEADER_DELETED' AS message;
+    END IF;
+END $$
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS sp_activate_header;
+DELIMITER $$
+CREATE PROCEDURE sp_activate_header(
+    IN p_id INT
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM headers WHERE id = p_id) THEN
+        SELECT 'HEADER_NOT_FOUND' AS message;
+    ELSE
+        UPDATE headers
+        SET is_active = FALSE WHERE id > 0;
+
+        UPDATE headers
+        SET is_active = TRUE
+        WHERE id = p_id;
+
+        SELECT *
+        FROM headers
+        WHERE id = p_id
+        LIMIT 1;
+    END IF;
+END $$
+DELIMITER ;
+
+
+
+CALL sp_get_product_showcase_by_id(1);
+
+CALL sp_get_all_product_showcases();
+
+CALL sp_get_public_product_showcases();
+
+CALL sp_delete_product_showcase(1);

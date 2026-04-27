@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import TopNav from '../components/TopNav'
 import ShopFooter from '../components/ShopFooter'
 import './PortalUI.css'
@@ -9,13 +9,14 @@ import CartPage from './customer/CartPage'
 import CheckoutPage from './customer/CheckoutPage'
 import MyOrdersPage from './customer/MyOrdersPage'
 import AboutPage from './customer/AboutPage'
-import { apiRequest, resolveImageUrl } from '../services/apiClient'
+import { apiRequest, getHeaders, normalizeHeaderRecord, resolveImageUrl } from '../services/apiClient'
 
 import UsersPage from './admin/UsersPage'
 import CategoriesPage from './admin/CategoriesPage'
 import ProductsPage from './admin/ProductsPage'
 import OrdersPage from './admin/OrdersPage'
 import DashboardPage from './admin/DashboardPage'
+import HeadersPage from './admin/HeadersPage'
 
 const customerTabs = [
     { key: 'home', label: 'Home' },
@@ -31,6 +32,7 @@ const adminTabs = [
     { key: 'orders', label: 'Đơn hàng' },
     { key: 'users', label: 'Người dùng' },
     { key: 'categories', label: 'Danh mục' },
+    { key: 'headers', label: 'Header & Menu' },
 ]
 
 const normalizeProductForUI = (product) => {
@@ -79,7 +81,6 @@ function CustomerPages({
                 onOpenProduct={onOpenProduct}
                 selectedCatalog={selectedCatalog}
                 selectedCatalogLabel={selectedCatalogLabel}
-                categoriesData={categoriesData}
                 productsData={productsData}
             />
         )
@@ -111,6 +112,7 @@ function AdminPages({ activeTab }) {
     if (activeTab === 'orders') return <OrdersPage />
     if (activeTab === 'users') return <UsersPage />
     if (activeTab === 'categories') return <CategoriesPage />
+    if (activeTab === 'headers') return <HeadersPage />
     return <DashboardPage />
 }
 
@@ -124,6 +126,7 @@ export default function PortalUI({ role = 'user', userName = 'Khach hang', onLog
     const [categoryMenu, setCategoryMenu] = useState([])
     const [productsData, setProductsData] = useState([])
     const [productImageMap, setProductImageMap] = useState({})
+    const [activeHeader, setActiveHeader] = useState(null)
 
     const mode = role === 'admin' ? 'admin' : 'customer'
     const tabs = useMemo(() => (mode === 'customer' ? customerTabs : adminTabs), [mode])
@@ -143,6 +146,32 @@ export default function PortalUI({ role = 'user', userName = 'Khach hang', onLog
 
         if (mode === 'customer') {
             fetchCategories()
+        }
+
+        return () => {
+            isMounted = false
+        }
+    }, [mode])
+
+    useEffect(() => {
+        let isMounted = true
+
+        const fetchActiveHeader = async () => {
+            const headersRes = await getHeaders()
+            if (!isMounted) return
+
+            if (!(headersRes.ok && headersRes.payload?.success && Array.isArray(headersRes.payload.data))) {
+                setActiveHeader(null)
+                return
+            }
+
+            const normalizedHeaders = headersRes.payload.data.map(normalizeHeaderRecord)
+            const currentActiveHeader = normalizedHeaders.find((item) => item.is_active) || null
+            setActiveHeader(currentActiveHeader)
+        }
+
+        if (mode === 'customer') {
+            fetchActiveHeader()
         }
 
         return () => {
@@ -178,19 +207,23 @@ export default function PortalUI({ role = 'user', userName = 'Khach hang', onLog
         setCustomerTab('detail')
     }
 
-    const fetchCartItems = async () => {
+    const fetchCartItems = useCallback(async () => {
         if (!userId) return
         const { ok, payload } = await apiRequest(`/api/cart-items/${userId}`)
         if (ok && payload?.success && Array.isArray(payload.data)) {
             setCartItems(payload.data)
         }
-    }
+    }, [userId])
 
     useEffect(() => {
-        if (userId && mode === 'customer') {
-            fetchCartItems()
-        }
-    }, [userId, mode])
+        if (!userId || mode !== 'customer') return undefined
+
+        const timer = window.setTimeout(() => {
+            void fetchCartItems()
+        }, 0)
+
+        return () => window.clearTimeout(timer)
+    }, [userId, mode, fetchCartItems])
 
     const handleAddToCart = async (productId, quantity = 1) => {
         if (!userId) return
@@ -229,7 +262,7 @@ export default function PortalUI({ role = 'user', userName = 'Khach hang', onLog
         }
     }
 
-    const handleSearch = async (keyword) => {
+    const handleSearch = useCallback(async (keyword) => {
         const categoryId = selectedCatalog.startsWith('category-')
             ? Number(selectedCatalog.replace('category-', ''))
             : 0
@@ -256,7 +289,7 @@ export default function PortalUI({ role = 'user', userName = 'Khach hang', onLog
             })
             setProductsData(normalized)
         }
-    }
+    }, [productImageMap, selectedCatalog])
 
     const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
 
@@ -271,6 +304,7 @@ export default function PortalUI({ role = 'user', userName = 'Khach hang', onLog
                 cartCount={cartCount}
                 selectedCatalog={selectedCatalog}
                 menuCategories={categoryMenu}
+                activeHeader={activeHeader}
                 onLogout={onLogout}
                 onSearch={handleSearch}
                 onChangeTab={async (nextTab, catalogKey, catalogLabel) => {

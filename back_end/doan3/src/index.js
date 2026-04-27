@@ -13,6 +13,7 @@ const orderRoutes = require("./routes/orderRoutes");
 const orderItemRoutes = require("./routes/orderItemRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const headerRoutes = require("./routes/headerRoutes");
 const { authenticate } = require("./middlewares/authMiddleware");
 
 const app = express();
@@ -33,6 +34,7 @@ app.use("/api/orders", authenticate, orderRoutes);
 app.use("/api/order-items", authenticate, orderItemRoutes);
 app.use("/api/reviews", authenticate, reviewRoutes);
 app.use("/api/dashboard", authenticate, dashboardRoutes);
+app.use("/api/headers", authenticate, headerRoutes);
 
 app.get("/", (req, res) => res.send("API Node.js đang chạy 🚀"));
 

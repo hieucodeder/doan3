@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { formatPrice } from '../../data/mockData'
 import { apiRequest } from '../../services/apiClient'
 
@@ -6,14 +6,13 @@ export default function HomePage({
     onOpenProduct,
     selectedCatalog = 'all',
     selectedCatalogLabel = 'Nước hoa',
-    categoriesData = [],
     productsData = [],
 }) {
     const selectedCategoryId = selectedCatalog.startsWith('category-')
         ? Number(selectedCatalog.replace('category-', ''))
         : null
 
-    const baseProducts = Array.isArray(productsData) ? productsData : []
+    const baseProducts = useMemo(() => (Array.isArray(productsData) ? productsData : []), [productsData])
     const sourceList = selectedCategoryId
         ? baseProducts.filter((item) => item.category_id === selectedCategoryId)
         : baseProducts
@@ -42,21 +41,7 @@ export default function HomePage({
         }
         fetchAllRatings()
         return () => { isMounted = false }
-    }, [productsData])
-
-    if (sourceList.length === 0) {
-        return (
-            <div className="shop-catalog-page">
-                <section className="catalog-heading">
-                    <h2>Nước hoa</h2>
-                    <p>Trang chủ  / Nước hoa / {selectedCatalogLabel}</p>
-                </section>
-                <section className="panel">
-                    <p>Hiện chưa có sản phẩm nào trong danh mục này.</p>
-                </section>
-            </div>
-        )
-    }
+    }, [baseProducts])
 
     const displayProducts = sourceList.map((product) => ({
         ...product,
@@ -71,7 +56,11 @@ export default function HomePage({
                 <p>Trang chủ / Nước hoa / {selectedCatalogLabel}</p>
             </section>
 
-
+            {sourceList.length === 0 ? (
+                <section className="panel">
+                    <p>Hiện chưa có sản phẩm nào trong danh mục này.</p>
+                </section>
+            ) : (
             <section className="catalog-product-grid">
                 <div className="card-list catalog-cards">
                     {displayProducts.map((product) => (
@@ -101,6 +90,7 @@ export default function HomePage({
                     ))}
                 </div>
             </section>
+            )}
         </div>
     )
 }
